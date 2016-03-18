@@ -17,45 +17,20 @@
     Prints description of module including information about the columns (or
       at least a link to an external page that has that info.)
 '''
+import requests
 
 from pyspark.sql.types import StructField, StringType, StructType, DoubleType, LongType
+from pyspark import SQLContext
+
+from .callback import postUsage as _postUsage
+from .exceptions import IBMSETISparkException
 
 #The user of this module needs to set this!
 sparkContext = None
-sqlContext = None
 
 _stringIndexes = (0, 1, 2, 4, 12, 13, 20, 21, 22)
 _doubleIndexes = (5, 6, 7, 8, 9, 10, 11, 14, 16, 17, 18)
 _longIndexes = (3, 15, 19)
-
-def typeConvToUnphysicalValue(d):
-  '''
-  This is to be used with getSignalDbDataFrame to map each value
-  in the RDD returned by SparkContext.textFile to a typed value in the DataFrame.
-
-  This function maps each value to an approprate string, double or long int.  
-
-  It is possilbe for values to be 'NULL'. With this function, NULLs are converted to
-  'NULL' for string types, and to unphysical values of -999999999.0 and
-  -999999999 for doubles and long ints, respectively. 
-  '''
-
-  returnList = []
-  for i in range(len(d)):    
-    if i in _stringIndexes: 
-      returnList.append(d[i])
-    elif i in _doubleIndexes: 
-      if d[i] == u'NULL':
-          returnList.append(-999999999.0)
-      else:
-          returnList.append(float(d[i]))
-    elif i in _longIndexes: 
-      if d[i] == u'NULL':
-          returnList.append(-999999999)
-      else:
-          returnList.append(long(d[i]))
-
-  return returnList
 
 def typeConvToNones(d):
   '''
@@ -130,13 +105,16 @@ def columns():
   return [f.name for f in _structFieldArray(False)]
 
 
-def signalDbRDDFromObjectStore(swiftFileURL, typeConversion=typeConvToNones, columns=None):
+def signalDbRDDFromObjectStore(swiftFileURL, typeConversion=typeConvToNones, cols=None):
   
-  if columns is None:
-    columns = columns()
+  if sparkContext is None:
+    raise IBMSETISparkException('ibmseti.signaldb.sparkContext is None.')
+
+  if cols is None:
+    cols = columns()
 
   rdd = sparkContext.textFile(swiftFileURL)\
-          .filter(lambda line: line.startswith(columns[0]) is False)\
+          .filter(lambda line: line.startswith(cols[0]) is False)\
           .map(lambda line:line.split("\t"))
   
   #convert the types
@@ -146,41 +124,38 @@ def signalDbRDDFromObjectStore(swiftFileURL, typeConversion=typeConvToNones, col
   return rdd   
 
 
-def signalDbDataFrameFromObjectStore(swiftFileURL, typeConversion=typeConvToNones, columns=None, fieldStruct=None):
+def signalDbDataFrameFromObjectStore(swiftFileURL, typeConversion=typeConvToNones, cols=None, fieldStruct=None):
 
-  rdd = signalDbRDDFromObjectStore(swiftFileURL, typeConversion=typeConversion, columns=columns)
+  rdd = signalDbRDDFromObjectStore(swiftFileURL, typeConversion=typeConversion, cols=cols)
 
   if fieldStruct is None:
     if typeConversion == None:
-      fieldStruct = _structFieldArray(True)
+      fieldStruct = _structFieldArray(allStrings=True)
     else:
-      fieldStruct = _structFieldArray(False)
-
+      fieldStruct = _structFieldArray(allStrings=False)
 
   sqlContext = SQLContext(sparkContext)
+  schema = StructType(fieldStruct)
 
-  return sqlContext.createDataFrame(rowRDD, schema)
+  return sqlContext.createDataFrame(rdd, schema)
 
 
-def signalDbRowsForTarget(RA, DEC, maxRangeArc = 0.01, source='node'):
+def signalDbRowsForTarget(RA, DEC, SigClass=None, maxRangeArc = 0.01):
   '''
   For a given position in the sky, query the signalDB database and return the
   rows that match the position within a given range.
 
-  If source == 'node', then query a Node Server backed with a database where SignalDB is found
+  This queries a service backed with a database where SignalDB is found
   (possibly use Cloudant or an RDMS service available in Bluemix environment)
 
-  Otherwise, assume that source is a swiftFileURL and pull data from SoftLayer.
+  Because we can build query views in the database for this simple function
+  of retrieving rows from the SignalDB
   '''
 
-  #We query our database -- either the SL object store or NodeJS webserver
-  #backed by a Cloudant (or mySQL database)
+  _db_url = 'https://gadamc2.cloudant.com/signaldb'
 
-  #If we use Cloudant here, we may need to do some post-query calculation to 
-  #remove signalDB rows that are outside of our range (this is necessary due to the way
-  #Cloudant works)
 
-  #return the rows
+  _postUsage('signalDbRowsForTarget')
   pass
 
 

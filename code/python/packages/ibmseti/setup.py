@@ -22,6 +22,7 @@ A set of tools developed for SETI analysis of ATA data in partnership with IBM.
 """
 
 from setuptools import setup, find_packages
+from ibmseti.__info__ import __version__
 
 requirements_file = open('requirements.txt')
 requirements = requirements_file.read().strip().split('\n')
@@ -31,7 +32,7 @@ setup_args = {
     'include_package_data': True,
     'install_requires': requirements,
     'name': 'ibmseti',
-    'version': '0.0.1a1',
+    'version': __version__,
     'author': 'gadamc',
     'author_email': 'adamcox@us.ibm.com',
     'url': 'https://github.com/gadamc/SETI',

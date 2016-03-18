@@ -11,7 +11,8 @@ Code produced in partnership between the SETI Institute of Mountain View, CA and
 
 ### Installation
 
-  !pip install --user ibmseti
+    pip install --user ibmseti
+
 
 ### Setup
 

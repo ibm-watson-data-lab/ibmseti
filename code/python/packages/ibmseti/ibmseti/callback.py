@@ -27,4 +27,42 @@ module to POST documents to that server to track usage.
 Will attempt to access envars in Bluemix/Spark service to populate document.
 
 '''
+import requests
+import datetime
+import dateutil.tz
+import json
+
+from .__info__ import __version__
+
+_post_url = 'https://gadamc2.cloudant.com/seti_callbackevents'
+
+_enabled = True
+
+def disable():
+  global _enabled
+  _enabled = False
+
+def enable():
+  global _enabled
+  _enabled = True
+
+def postUsage(name):
+  
+  if _enabled is False:
+    return
+
+  nn  = datetime.datetime.now(dateutil.tz.tzlocal())
+
+  doc = {
+  'functioncall':name,
+  'date':nn.isoformat(),
+  'date_tz':nn.tzname(),
+  'ibmseti_version':__version__
+  }
+
+  #TODO - this would perform better if we created and held on to an HTTP session 
+  return requests.post(_post_url, headers={'Content-Type': 'application/json'},
+    data=json.dumps(doc))
+
+   
 

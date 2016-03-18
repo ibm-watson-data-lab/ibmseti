@@ -12,14 +12,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-A set of tools developed for SETI analysis of ATA data in partnership with IBM.
-"""
 
-import callback
-import signaldb
-import models
-import spectrograms
-import transform
-
-callback.postUsage('__init__')
+__version__ = '0.0.1a1'
