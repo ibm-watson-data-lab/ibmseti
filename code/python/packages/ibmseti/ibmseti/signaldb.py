@@ -28,9 +28,6 @@ from .exceptions import IBMSETISparkException
 #The user of this module needs to set this!
 sparkContext = None
 
-_stringIndexes = (0, 1, 2, 4, 12, 13, 20, 21, 22)
-_doubleIndexes = (5, 6, 7, 8, 9, 10, 11, 14, 16, 17, 18)
-_longIndexes = (3, 15, 19)
 
 def typeConvToNones(d):
   '''
@@ -42,6 +39,10 @@ def typeConvToNones(d):
   It is possilbe for values to be 'NULL'. With this function, NULLs are converted to
   None for all types. 
   '''
+
+  _stringIndexes = (0, 1, 2, 4, 12, 13, 20, 21, 22)
+  _doubleIndexes = (5, 6, 7, 8, 9, 10, 11, 14, 16, 17, 18)
+  _longIndexes = (3, 15, 19)  
 
   returnList = []
   for i in range(len(d)):
@@ -60,6 +61,7 @@ def typeConvToNones(d):
 def _structFieldArray(allStrings = False):
 
   if allStrings:
+    # this is a horrible circular dependency!
     return [StructField(field_name, StringType(), True) for field_name in columns()]
   else:
     '''
