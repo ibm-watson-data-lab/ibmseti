@@ -103,3 +103,26 @@ rows where SigClass == "Cand" and other criteria in the SignalDB
 
 *** This will also need a Node.js server in order to rate-limit users to a small 
 number of compamps per day. 
+
+## Contributing
+
+In addition to the packages specified in `setup.py` and `requirements.txt`,
+this package depends on `pyspark`. In order to satisfy that dependency for development
+ you should install a version of SPARK and ensure that  PYTHONPATH includes the 
+ path to the `pyspark` and `py4j`. 
+
+I installed SPARK on my Mac via Homebrew.
+
+    brew install apache-spark
+
+Then, in my `.bash_profile` file, I specified the PYTHONPATH by adding
+
+    if which pyspark > /dev/null; then
+      export SPARK_HOME=/usr/local/Cellar/apache-spark/1.6.1/libexec
+      export PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.9-src.zip:$PYTHONPATH
+    fi
+
+
+
+
+
