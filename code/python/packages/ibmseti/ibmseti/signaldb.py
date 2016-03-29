@@ -71,29 +71,29 @@ def _structFieldArray(allStrings = False):
     Also note that the DfitfHz/s column was changed from the original
     source on Softlayer. The '/' was removed --> DriftHzs
     '''
-    return [StructField('UniqueId', StringType(), True),   #0
-            StructField('Time', StringType(), True),       #1
-            StructField('ActTyp', StringType(), True),     #2
-            StructField('TgtId', LongType(), True),        #3
-            StructField('catalog', StringType(), True),    #4
-            StructField('RA2000Hr', DoubleType(), True),   #5
-            StructField('Dec2000Deg', DoubleType(), True), #6
-            StructField('Power', DoubleType(), True),      #7
+    return [StructField('UNIQUEID', StringType(), True),   #0
+            StructField('TIME', StringType(), True),       #1
+            StructField('ACTTYPE', StringType(), True),     #2
+            StructField('TGTID', LongType(), True),        #3
+            StructField('CATALOG', StringType(), True),    #4
+            StructField('RA2000HR', DoubleType(), True),   #5
+            StructField('DEC2000DEG', DoubleType(), True), #6
+            StructField('POWER', DoubleType(), True),      #7
             StructField('SNR', DoubleType(), True),        #8
-            StructField('FreqMHz', DoubleType(), True),    #9
-            StructField('DriftHzs', DoubleType(), True),   #10
-            StructField('WidHz', DoubleType(), True),      #11
-            StructField('Pol', StringType(), True),        #12
-            StructField('SigTyp', StringType(), True),     #13
-            StructField('PPeriodS', DoubleType(), True),   #14
-            StructField('NPul', LongType(), True),         #15
-            StructField('IntTimeS', DoubleType(), True),   #16
-            StructField('TscpAzDeg', DoubleType(), True),  #17
-            StructField('TscpElDeg', DoubleType(), True),  #18
-            StructField('BeamNo', LongType(), True),       #19
-            StructField('SigClass', StringType(), True),   #20
-            StructField('SigReason', StringType(), True),  #21
-            StructField('CandReason', StringType(), True)  #22
+            StructField('FREQMHZ', DoubleType(), True),    #9
+            StructField('DRIFTHZS', DoubleType(), True),   #10
+            StructField('WIDHZ', DoubleType(), True),      #11
+            StructField('POL', StringType(), True),        #12
+            StructField('SIGTYP', StringType(), True),     #13
+            StructField('PPERIODS', DoubleType(), True),   #14
+            StructField('NPUL', LongType(), True),         #15
+            StructField('INTTIMES', DoubleType(), True),   #16
+            StructField('TSCPAZDEG', DoubleType(), True),  #17
+            StructField('TSCPELDEG', DoubleType(), True),  #18
+            StructField('BEAMNO', LongType(), True),       #19
+            StructField('SIGCLASS', StringType(), True),   #20
+            StructField('SIGREASON', StringType(), True),  #21
+            StructField('CANDREASON', StringType(), True)  #22
            ]
 
 
@@ -114,9 +114,12 @@ def signalDbRDDFromObjectStore(swiftFileURL, typeConversion=typeConvToNones, col
 
   if cols is None:
     cols = columns()
+  
+  lencols = len(cols)
 
   rdd = sparkContext.textFile(swiftFileURL)\
           .filter(lambda line: line.startswith(cols[0]) is False)\
+          .filter(lambda line: len(line.split("\t")) == lencols)\
           .map(lambda line:line.split("\t"))
   
   #convert the types
