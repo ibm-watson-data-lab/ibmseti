@@ -21,6 +21,7 @@ import requests
 
 from pyspark.sql.types import StructField, StringType, StructType, DoubleType, LongType
 from pyspark import SQLContext
+import numpy as np
 
 from .callback import postUsage as _postUsage
 from .exceptions import IBMSETISparkException
@@ -47,7 +48,7 @@ def typeConvToNones(d):
   returnList = []
   for i in range(len(d)):
     if d[i] == u'NULL':
-        returnList.append(None) 
+        returnList.append(np.nan) 
     else:    
       if i in _stringIndexes: 
         returnList.append(d[i])
