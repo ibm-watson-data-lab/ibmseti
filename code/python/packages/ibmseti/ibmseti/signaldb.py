@@ -73,7 +73,7 @@ def _structFieldArray(allStrings = False):
     '''
     return [StructField('UNIQUEID', StringType(), True),   #0
             StructField('TIME', StringType(), True),       #1
-            StructField('ACTTYPE', StringType(), True),     #2
+            StructField('ACTTYP', StringType(), True),     #2
             StructField('TGTID', LongType(), True),        #3
             StructField('CATALOG', StringType(), True),    #4
             StructField('RA2000HR', DoubleType(), True),   #5
@@ -117,7 +117,7 @@ def signalDbRDDFromObjectStore(swiftFileURL, typeConversion=typeConvToNones, col
   
   lencols = len(cols)
   headerstart = cols[0].lower()
-  
+
   rdd = sparkContext.textFile(swiftFileURL)\
           .filter(lambda line: line.lower().startswith(headerstart) is False)\
           .filter(lambda line: len(line.split("\t")) == lencols)\
