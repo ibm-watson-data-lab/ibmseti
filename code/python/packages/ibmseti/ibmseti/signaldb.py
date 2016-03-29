@@ -116,9 +116,10 @@ def signalDbRDDFromObjectStore(swiftFileURL, typeConversion=typeConvToNones, col
     cols = columns()
   
   lencols = len(cols)
-
+  headerstart = cols[0].lower()
+  
   rdd = sparkContext.textFile(swiftFileURL)\
-          .filter(lambda line: line.startswith(cols[0]) is False)\
+          .filter(lambda line: line.lower().startswith(headerstart) is False)\
           .filter(lambda line: len(line.split("\t")) == lencols)\
           .map(lambda line:line.split("\t"))
   
