@@ -19,6 +19,16 @@
 '''
 import requests
 
+from pyspark.sql.types import StructField, StringType, StructType, DoubleType, LongType
+from pyspark import SQLContext
+import numpy as np
+
+from .callback import postUsage as _postUsage
+from .exceptions import IBMSETISparkException
+
+#SETI/NASA/IBMers that access the Softlayer SignalDB files must set this
+sparkContext = None
+
 
 def candidatesForTarget(RA, DEC, maxRangeDeg = 0.01, **kwargs):
   '''
@@ -56,9 +66,146 @@ def candidatesForTarget(RA, DEC, maxRangeDeg = 0.01, **kwargs):
 def archiveCompamps():
   pass
 
+
+#
+# The following functions are useful for SETI/NASA/IBMers researchers that 
+# have credentials to the SignalDB data in our Softlayer ObjectStore
+#
+
 def compampName(signalDbRow):
   '''
   Return the name of the compamp file for a particular row in the SignalDB.
   '''
   pass
+
+from pyspark.sql.types import StructField, StringType, StructType, DoubleType, LongType
+from pyspark import SQLContext
+import numpy as np
+
+from .callback import postUsage as _postUsage
+from .exceptions import IBMSETISparkException
+
+#The user of this module needs to set this!
+sparkContext = None
+
+
+def typeConvToNones(d):
+  '''
+  This is to be used with getSignalDbDataFrame to map each value
+  in the RDD returned by SparkContext.textFile to a typed value in the DataFrame.
+
+  This function maps each value to an approprate string, double or long int.  
+
+  It is possilbe for values to be 'NULL'. With this function, NULLs are converted to
+  None for all types. 
+  '''
+
+  _stringIndexes = (0, 1, 2, 4, 12, 13, 20, 21, 22)
+  _doubleIndexes = (5, 6, 7, 8, 9, 10, 11, 14, 16, 17, 18)
+  _longIndexes = (3, 15, 19)  
+
+  returnList = []
+  for i in range(len(d)):
+    if d[i] == u'NULL':
+        returnList.append(np.nan) 
+    else:    
+      if i in _stringIndexes: 
+        returnList.append(d[i])
+      elif i in _doubleIndexes: 
+        returnList.append(float(d[i]))
+      elif i in _longIndexes: 
+        returnList.append(long(d[i]))
   
+  return returnList
+
+def _structFieldArray(allStrings = False):
+
+  if allStrings:
+    # this is a horrible circular dependency!
+    return [StructField(field_name, StringType(), True) for field_name in columns()]
+  else:
+    '''
+    Note that this is the definitive source in this library for 
+    the column names in the SignalDB.
+
+    Also note that the DfitfHz/s column was changed from the original
+    source on Softlayer. The '/' was removed --> DriftHzs
+    '''
+    return [StructField('UNIQUEID', StringType(), True),   #0
+            StructField('TIME', StringType(), True),       #1
+            StructField('ACTTYP', StringType(), True),     #2
+            StructField('TGTID', LongType(), True),        #3
+            StructField('CATALOG', StringType(), True),    #4
+            StructField('RA2000HR', DoubleType(), True),   #5
+            StructField('DEC2000DEG', DoubleType(), True), #6
+            StructField('POWER', DoubleType(), True),      #7
+            StructField('SNR', DoubleType(), True),        #8
+            StructField('FREQMHZ', DoubleType(), True),    #9
+            StructField('DRIFTHZS', DoubleType(), True),   #10
+            StructField('WIDHZ', DoubleType(), True),      #11
+            StructField('POL', StringType(), True),        #12
+            StructField('SIGTYP', StringType(), True),     #13
+            StructField('PPERIODS', DoubleType(), True),   #14
+            StructField('NPUL', LongType(), True),         #15
+            StructField('INTTIMES', DoubleType(), True),   #16
+            StructField('TSCPAZDEG', DoubleType(), True),  #17
+            StructField('TSCPELDEG', DoubleType(), True),  #18
+            StructField('BEAMNO', LongType(), True),       #19
+            StructField('SIGCLASS', StringType(), True),   #20
+            StructField('SIGREASON', StringType(), True),  #21
+            StructField('CANDREASON', StringType(), True)  #22
+           ]
+
+
+def columns():
+  '''
+  Returns the names of the columns of the SignalDB 
+  '''
+  #This may seem slow since we're creating a bunch of objects,
+  #but its trivial given the time for other data analysis.
+  #It's definitely worth the convenience of having one definitive source of column names.
+  return [f.name for f in _structFieldArray(False)]
+
+
+def signalDbRDDFromObjectStore(swiftFileURL, typeConversion=typeConvToNones, cols=None):
+  
+  if sparkContext is None:
+    raise IBMSETISparkException('ibmseti.signaldb.sparkContext is None.')
+
+  if cols is None:
+    cols = columns()
+  
+  lencols = len(cols)
+  headerstart = cols[0].lower()
+
+  rdd = sparkContext.textFile(swiftFileURL)\
+          .filter(lambda line: line.lower().startswith(headerstart) is False)\
+          .filter(lambda line: len(line.split("\t")) == lencols)\
+          .map(lambda line:line.split("\t"))
+  
+  #convert the types
+  if typeConversion is not None:
+    rdd = rdd.map(typeConversion)
+  
+  return rdd   
+
+
+def signalDbDataFrameFromObjectStore(swiftFileURL, typeConversion=typeConvToNones, cols=None, fieldStruct=None):
+
+  rdd = signalDbRDDFromObjectStore(swiftFileURL, typeConversion=typeConversion, cols=cols)
+
+  if fieldStruct is None:
+    if typeConversion == None:
+      fieldStruct = _structFieldArray(allStrings=True)
+    else:
+      fieldStruct = _structFieldArray(allStrings=False)
+
+  if sparkContext is None:
+    raise IBMSETISparkException('ibmseti.signaldb.sparkContext is None.')
+
+  sqlContext = SQLContext(sparkContext)
+  schema = StructType(fieldStruct)
+
+  return sqlContext.createDataFrame(rdd, schema)
+
+
