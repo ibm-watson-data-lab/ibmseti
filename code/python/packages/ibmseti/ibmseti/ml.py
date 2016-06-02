@@ -15,7 +15,7 @@
 
 def buildkNNModel(featuresList, classification):
   '''
-  Perhaps we'd add a simple kNN model as an example or citizen scientists to follow.
+  Perhaps we'd add a simple kNN model as an example for citizen scientists to follow.
 
   featuresList: list of features (which is also a list) 
                 that have been extracted from spectrograms. 
