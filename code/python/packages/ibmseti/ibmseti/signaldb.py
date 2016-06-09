@@ -20,7 +20,6 @@ available to IBM, SETI, and NASA researchers.)
 
 '''
 
-
 from pyspark.sql.types import StructField, StringType, StructType, DoubleType, LongType
 from pyspark import SQLContext
 
