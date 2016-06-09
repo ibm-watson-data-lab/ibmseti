@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (c) 2016 IBM. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,5 +20,6 @@ import signaldb
 import ml
 import dsp
 import datareader
+import features
 
 callback.postUsage('__init__')

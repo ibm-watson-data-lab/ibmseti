@@ -35,7 +35,7 @@ import os
 
 from .__info__ import __version__
 
-_post_url = 'https://gadamc2.cloudant.com/seti_callbackevents'
+_post_url = 'https://gadamc2.cloudant.com/seti_pythoncallbackevents'
 
 _enabled = True
 
@@ -64,7 +64,8 @@ def postUsage(name):
   'spark_ego_consumer':os.environ.get('SPARK_EGO_CONSUMER',None),
   'spark_ident_string':os.environ.get('SPARK_IDENT_STRING',None),
   'ego_master_list_pem':os.environ.get('EGO_MASTER_LIST_PEM',None),
-  'doc_version':2
+  'doc_version':2,
+  'type':'python-callback'
   }
 
   return requests.post(_post_url, headers={'Content-Type': 'application/json'},

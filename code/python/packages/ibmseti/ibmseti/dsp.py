@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (c) 2016 IBM. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,7 +42,7 @@ def complex_to_power(header, cdata, max_subband_bins_per_1khz_half_frame = 512):
 
   return fftcdata
 
-def aca_reshape(arr):
+def reshape_to_2d(arr):
   '''
   Assumes a 3D Numpy array, and reshapes like
   
@@ -87,7 +86,7 @@ def raw_to_spectrogram(raw_str, max_subband_bins_per_1khz_half_frame = 512):
   power = complex_to_power(header, datareader.packed_data_to_complex(arr), 
                                         max_subband_bins_per_1khz_half_frame)
   
-  return header, aca_reshape(power)
+  return header, reshape_to_2d(power)
 
 def scale_to_png(arr):
   return np.clip(arr * 255.0/arr.max() , 0, 255).astype(np.uint8)
