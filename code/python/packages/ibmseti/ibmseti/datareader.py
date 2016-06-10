@@ -17,6 +17,7 @@ import struct
 
 _header_offset = 40
 
+
 def read_header(raw_str, max_subband_bins_per_1khz_half_frame = 512):
 
   rf_center_frequency, half_frame_number, activity_id, hz_per_subband, start_subband_id, \
@@ -36,6 +37,17 @@ def read_header(raw_str, max_subband_bins_per_1khz_half_frame = 512):
           'half_frame_bytes':half_frame_bytes, 
           'number_of_half_frames':number_of_half_frames}
 
+def read_all_headers(raw_str, sbbins = 512):
+  first_header = read_header(raw_str, sbbins)
+  packed_data = np.frombuffer(raw_str, dtype=np.int8)\
+      .reshape((first_header['number_of_half_frames'], first_header['half_frame_bytes']))
+
+  headers = []
+  for row in packed_data:
+    headers.append(read_header(row,sbbins))
+
+  return headers
+  
 def to_header_and_packed_data(raw_str, max_subband_bins_per_1khz_half_frame = 512):
 
   header = read_header(raw_str, max_subband_bins_per_1khz_half_frame)
