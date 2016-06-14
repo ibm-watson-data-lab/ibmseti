@@ -20,11 +20,26 @@ import numpy as np
 from . import datareader
 
 
+def time_bins(header, max_subband_bins_per_1khz_half_frame = 512):
+  tb = np.arange(header['number_of_half_frames'], dtype=np.float64)*max_subband_bins_per_1khz_half_frame\
+  *(1.0 - header['over_sampling']) / header['hz_per_subband']
+
+  return tb
+
+def frequency_bins(header, max_subband_bins_per_1khz_half_frame = 512):
+  fb = np.fft.fftshift(\
+    np.fft.fftfreq( int(header["number_of_subbands"] * max_subband_bins_per_1khz_half_frame*(1.0 - header['over_sampling'])), \
+      1.0/(header["number_of_subbands"]*header["hz_per_subband"])) + 1.0e6*header['rf_center_frequency']
+    )
+  return fb
+
+
 def complex_to_power(header, cdata, max_subband_bins_per_1khz_half_frame = 512):  
   '''
-  header: header of raw data
+  header: header from raw data
   cdata: complex data
 
+  returns a spectrogram
   '''
   
   # expose compamp measurement blocks
