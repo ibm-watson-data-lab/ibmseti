@@ -20,7 +20,7 @@ _header_offset = 40
 
 def read_header(raw_str, max_subband_bins_per_1khz_half_frame = 512):
 
-  rf_center_frequency, half_frame_number, activity_id, hz_per_subband, start_subband_id, \
+  rf_center_frequency, half_frame_number, activity_id, subband_spacing_hz, start_subband_id, \
   number_of_subbands, over_sampling, polarization = struct.unpack('>diidiifi', raw_str[:_header_offset])  # read header
 
   #todo -- this will be a problem if somebody wants to use 1024 bins instead. This doesn't take into account that
@@ -32,7 +32,7 @@ def read_header(raw_str, max_subband_bins_per_1khz_half_frame = 512):
   return {'rf_center_frequency':rf_center_frequency, 
           'half_frame_number':half_frame_number, 
           'activity_id':activity_id, 
-          'hz_per_subband':hz_per_subband, 
+          'subband_spacing_hz':subband_spacing_hz, 
           'start_subband_id':start_subband_id,
           'number_of_subbands':number_of_subbands, 
           'over_sampling':over_sampling, 
