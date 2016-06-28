@@ -11,16 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-A set of tools developed for SETI analysis of ATA data in partnership with IBM.
-"""
 
-import callback
-import signaldb
-import dsp
-import datareader
-import features
 
-from __info__ import __version__
+#compamp and archive-compamp file structure constants
+__header_offset = 40
+__bins_per_half_frame = 512
 
-callback.postUsage('__init__')

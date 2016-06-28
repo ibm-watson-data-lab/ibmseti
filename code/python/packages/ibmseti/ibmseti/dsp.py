@@ -19,22 +19,23 @@
 import numpy as np
 from . import datareader
 
+from __constants__ import __bins_per_half_frame
 
-def time_bins(header, max_subband_bins_per_1khz_half_frame = 512):
-  tb = np.arange(header['number_of_half_frames'], dtype=np.float64)*max_subband_bins_per_1khz_half_frame\
+def time_bins(header):
+  tb = np.arange(header['number_of_half_frames'], dtype=np.float64)*__bins_per_half_frame\
   *(1.0 - header['over_sampling']) / header['subband_spacing_hz']
 
   return tb
 
-def frequency_bins(header, max_subband_bins_per_1khz_half_frame = 512):
+def frequency_bins(header):
   fb = np.fft.fftshift(\
-    np.fft.fftfreq( int(header["number_of_subbands"] * max_subband_bins_per_1khz_half_frame*(1.0 - header['over_sampling'])), \
+    np.fft.fftfreq( int(header["number_of_subbands"] * __bins_per_half_frame*(1.0 - header['over_sampling'])), \
       1.0/(header["number_of_subbands"]*header["subband_spacing_hz"])) + 1.0e6*header['rf_center_frequency']
     )
   return fb
 
 
-def complex_to_power(header, cdata, max_subband_bins_per_1khz_half_frame = 512):  
+def complex_to_power(header, cdata):  
   '''
   header: header from raw data
   cdata: complex data
@@ -43,7 +44,7 @@ def complex_to_power(header, cdata, max_subband_bins_per_1khz_half_frame = 512):
   '''
   
   # expose compamp measurement blocks
-  cdata = cdata.reshape((header['number_of_half_frames'], header['number_of_subbands'], max_subband_bins_per_1khz_half_frame))  
+  cdata = cdata.reshape((header['number_of_half_frames'], header['number_of_subbands'], __bins_per_half_frame))  
 
   # FFT all blocks separately and rearrange output
   fftcdata = np.fft.fftshift(np.fft.fft(cdata), 2)  
@@ -51,8 +52,7 @@ def complex_to_power(header, cdata, max_subband_bins_per_1khz_half_frame = 512):
   # slice out oversampled frequencies
   fftcdata = fftcdata[:, :, int(cdata.shape[2]*header['over_sampling']/2):-int(cdata.shape[2]*header['over_sampling']/2)] 
 
-  # normalize and amplify by factor 15
-  #TODO: why do we normalize? what are the units? 
+  # normalize and amplify by factor 15 (what is the factor of 15 for?)
   fftcdata = np.multiply(fftcdata.real**2 + fftcdata.imag**2, 15.0/cdata.shape[2])
 
   return fftcdata
@@ -70,7 +70,7 @@ def reshape_to_2d(arr):
   return arr.reshape((arr.shape[0], arr.shape[1]*arr.shape[2]))
 
 
-def raw_to_spectrogram(raw_str, max_subband_bins_per_1khz_half_frame = 512):
+def raw_to_spectrogram(raw_str):
   '''
   Extract both of these from the to_header_and_packed_data function.
 
@@ -95,11 +95,9 @@ def raw_to_spectrogram(raw_str, max_subband_bins_per_1khz_half_frame = 512):
       #Time is on the horizontal axis and frequency bin is along the vertical.
   '''
 
-  header, arr = datareader.to_header_and_packed_data(raw_str,
-                                                     max_subband_bins_per_1khz_half_frame)
+  header, arr = datareader.to_header_and_packed_data(raw_str)
 
-  power = complex_to_power(header, datareader.packed_data_to_complex(arr), 
-                                        max_subband_bins_per_1khz_half_frame)
+  power = complex_to_power(header, datareader.packed_data_to_complex(arr))
   
   return header, reshape_to_2d(power)
 
@@ -107,9 +105,7 @@ def scale_to_png(arr):
   return np.clip(arr * 255.0/arr.max() , 0, 255).astype(np.uint8)
 
 
-def complex_to_ac(header, cdata, 
-                  window=np.hanning,
-                  max_subband_bins_per_1khz_half_frame=512):  # convert single or multi-subband compamps into autocorrelation waterfall
+def complex_to_ac(header, cdata, window=np.hanning):  # convert single or multi-subband compamps into autocorrelation waterfall
 
   '''
   Adapted from Gerry Harp at SETI.
@@ -117,8 +113,7 @@ def complex_to_ac(header, cdata,
   '''
 
   # expose compamp measurement blocks
-  msbp1kzhf = max_subband_bins_per_1khz_half_frame
-  cdata = cdata.reshape((header['number_of_half_frames'], header['number_of_subbands'], msbp1kzhf))  # expose compamp measurement blocks
+  cdata = cdata.reshape((header['number_of_half_frames'], header['number_of_subbands'], __bins_per_half_frame))  # expose compamp measurement blocks
 
   #Apply Windowing and Padding
   cdata = np.multiply(cdata, window(cdata.shape[2]))  # window for smoothing sharp time series start/end in freq. dom.
@@ -159,12 +154,12 @@ def ac_viz(acdata):
 
   return acdata
 
-def raw_to_ac(raw_str, window = np.hanning, max_subband_bins_per_1khz_half_frame = 512):
+def raw_to_ac(raw_str, window = np.hanning):
 
-  header, packed_data = datareader.to_header_and_packed_data(raw_str, max_subband_bins_per_1khz_half_frame)
+  header, packed_data = datareader.to_header_and_packed_data(raw_str)
   cdata = datareader.packed_data_to_complex(packed_data)
 
-  acdata = complex_to_ac(header, cdata, window, max_subband_bins_per_1khz_half_frame)
+  acdata = complex_to_ac(header, cdata, window)
   
   return header, acdata
 
