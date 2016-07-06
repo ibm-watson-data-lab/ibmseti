@@ -3,42 +3,36 @@
 Code produced in partnership between the SETI Institute of Mountain View, CA and IBM. 
 
 
-### Requirements
-  requests
-
-
 ## Privacy Warning
 
 We send usage information of this library when you import the package and make particular calls. 
-This helps us to understand the popularity of this library. If you wish to turn this off, 
-you may do so by
+In particular, we collect the following environment variables:
+
+  * USER
+  * SPARK_MASTER_IP
+  * SPARK_TENANT_ID
+
+In the IBM Spark Service environment these envars contains unique identifiers for your Spark Service. 
+
+If you wish to turn this off, you may do so by
 
   ```python
   ibmseti.callback.disable()
   ```
-
-In particular, we collect the following environment variables (which are set in your IBM Spark service)
-
-  * SPARK_TENANT_ID
-  * EGOSC_SERVICE_NAME
-  * SPARK_EGO_CONSUMER
-  * SPARK_IDENT_STRING
-  * EGO_MASTER_LIST_PEM
 
 
 ## Example User Code
 
 ### Installation
 
-    pip install --user ibmseti
+    pip install ibmseti
 
 
 ### Setup
 
-  ```python
-  import ibmseti
-
-  ```
+```python
+import ibmseti
+```
 
 ### Select an Interesting Target
 
@@ -84,24 +78,24 @@ the `ramin`, `ramax`, `decmin` and `decmax` options.
 
 For example:
 
-  ```python
-  import requests
-  RA=19.832
-  DEC=46.997
-  box = 0.002
+```python
+import requests
+RA=19.832
+DEC=46.997
+box = 0.002
 
-  # We want this query
-  # http://setigopublic.mybluemix.net/v1/coordinates/aca?ramin=19.830&ramax=19.834&decmin=46.995&decmax=46.999
+# We want this query
+# http://setigopublic.mybluemix.net/v1/coordinates/aca?ramin=19.830&ramax=19.834&decmin=46.995&decmax=46.999
 
-  params = {
-    'ramin':RA-box, 'ramax':RA+box, 'decmin':DEC-box, 'decmax':DEC+box
-  }
-  r = requests.get('https://setigopublic.mybluemix.net/v1/coordinates/aca',
-      params = params)
+params = {
+  'ramin':RA-box, 'ramax':RA+box, 'decmin':DEC-box, 'decmax':DEC+box
+}
+r = requests.get('https://setigopublic.mybluemix.net/v1/coordinates/aca',
+    params = params)
 
-  import json
-  print json.dumps(r.json(), indent=1)
-    ```
+import json
+print json.dumps(r.json(), indent=1)
+```
 
 We get the following output:
 

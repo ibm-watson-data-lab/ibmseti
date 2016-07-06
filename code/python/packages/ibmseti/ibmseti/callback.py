@@ -59,12 +59,10 @@ def postUsage(name):
   'date':nn.isoformat(),
   'date_tz':nn.tzname(),
   'ibmseti_version':__version__,
+  'user': os.environ.get('USER',None),
   'spark_tenant_id': os.environ.get('SPARK_TENANT_ID',None),
-  'egosc_servive_name' :os.environ.get('EGOSC_SERVICE_NAME',None),
-  'spark_ego_consumer':os.environ.get('SPARK_EGO_CONSUMER',None),
-  'spark_ident_string':os.environ.get('SPARK_IDENT_STRING',None),
-  'ego_master_list_pem':os.environ.get('EGO_MASTER_LIST_PEM',None),
-  'doc_version':2,
+  'spark_master_ip': os.environ.get('SPARK_MASTER_IP',None),
+  'doc_version':3,
   'type':'python-callback'
   }
 
