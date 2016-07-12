@@ -27,6 +27,9 @@ def time_bins(header):
   return tb
 
 def frequency_bins(header):
+  '''
+  Returnes the bin edges for the spectrogram. 
+  '''
   fb = np.fft.fftshift(\
     np.fft.fftfreq( int(header["number_of_subbands"] * __constants__.bins_per_half_frame*(1.0 - header['over_sampling'])), \
       1.0/(header["number_of_subbands"]*header["subband_spacing_hz"])) + 1.0e6*header['rf_center_frequency']
@@ -96,7 +99,11 @@ def compamp_to_spectrogram(compamp):
   return reshape_to_2d(power)
 
 def scale_to_png(arr):
-  return np.clip(arr * 255.0/arr.max() , 0, 255).astype(np.uint8)
+  if arr.min() < 0:
+    sh_arr = arr + -1.0*arr.min()
+  else:
+    sh_arr = arr
+  return np.clip(sh_arr * 255.0/sh_arr.max(), 0, 255).astype(np.uint8)
 
 
 def compamp_to_ac(compamp, window=np.hanning):  # convert single or multi-subband compamps into autocorrelation waterfall
