@@ -14,6 +14,6 @@
 
 
 #compamp and archive-compamp file structure constants
-__header_offset = 40
-__bins_per_half_frame = 512
+header_offset = 40
+bins_per_half_frame = 512
 

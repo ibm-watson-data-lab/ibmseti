@@ -17,42 +17,41 @@
 '''
 
 import numpy as np
-from . import datareader
 
-from __constants__ import __bins_per_half_frame
+from . import __constants__
 
 def time_bins(header):
-  tb = np.arange(header['number_of_half_frames'], dtype=np.float64)*__bins_per_half_frame\
+  tb = np.arange(header['number_of_half_frames'], dtype=np.float64)*__constants__.bins_per_half_frame\
   *(1.0 - header['over_sampling']) / header['subband_spacing_hz']
 
   return tb
 
 def frequency_bins(header):
+  '''
+  Returnes the bin edges for the spectrogram. 
+  '''
   fb = np.fft.fftshift(\
-    np.fft.fftfreq( int(header["number_of_subbands"] * __bins_per_half_frame*(1.0 - header['over_sampling'])), \
+    np.fft.fftfreq( int(header["number_of_subbands"] * __constants__.bins_per_half_frame*(1.0 - header['over_sampling'])), \
       1.0/(header["number_of_subbands"]*header["subband_spacing_hz"])) + 1.0e6*header['rf_center_frequency']
     )
   return fb
 
 
-def complex_to_power(header, cdata):  
+def complex_to_power(cdata, over_sampling):  
   '''
-  header: header from raw data
-  cdata: complex data
+  cdata: 3D complex data (shaped by subbands and half_frames, as returned from Compamp.complex_data())
+  over_sampling: The fraction of oversampling across subbands (typically 0.25)
 
   returns a spectrogram
   '''
   
-  # expose compamp measurement blocks
-  cdata = cdata.reshape((header['number_of_half_frames'], header['number_of_subbands'], __bins_per_half_frame))  
-
   # FFT all blocks separately and rearrange output
   fftcdata = np.fft.fftshift(np.fft.fft(cdata), 2)  
   
   # slice out oversampled frequencies
-  fftcdata = fftcdata[:, :, int(cdata.shape[2]*header['over_sampling']/2):-int(cdata.shape[2]*header['over_sampling']/2)] 
+  fftcdata = fftcdata[:, :, int(cdata.shape[2]*over_sampling/2):-int(cdata.shape[2]*over_sampling/2)] 
 
-  # normalize and amplify by factor 15 (what is the factor of 15 for?)
+  # calculate power, normalize and amplify by factor 15 (what is the factor of 15 for?)
   fftcdata = np.multiply(fftcdata.real**2 + fftcdata.imag**2, 15.0/cdata.shape[2])
 
   return fftcdata
@@ -70,7 +69,7 @@ def reshape_to_2d(arr):
   return arr.reshape((arr.shape[0], arr.shape[1]*arr.shape[2]))
 
 
-def raw_to_spectrogram(raw_str):
+def compamp_to_spectrogram(compamp):
   '''
   Extract both of these from the to_header_and_packed_data function.
 
@@ -95,25 +94,27 @@ def raw_to_spectrogram(raw_str):
       #Time is on the horizontal axis and frequency bin is along the vertical.
   '''
 
-  header, arr = datareader.to_header_and_packed_data(raw_str)
-
-  power = complex_to_power(header, datareader.packed_data_to_complex(arr))
+  power = complex_to_power(compamp.complex_data(), compamp.header()['over_sampling'])
   
-  return header, reshape_to_2d(power)
+  return reshape_to_2d(power)
 
 def scale_to_png(arr):
-  return np.clip(arr * 255.0/arr.max() , 0, 255).astype(np.uint8)
+  if arr.min() < 0:
+    sh_arr = arr + -1.0*arr.min()
+  else:
+    sh_arr = arr
+  return np.clip(sh_arr * 255.0/sh_arr.max(), 0, 255).astype(np.uint8)
 
 
-def complex_to_ac(header, cdata, window=np.hanning):  # convert single or multi-subband compamps into autocorrelation waterfall
+def compamp_to_ac(compamp, window=np.hanning):  # convert single or multi-subband compamps into autocorrelation waterfall
 
   '''
   Adapted from Gerry Harp at SETI.
   
   '''
-
-  # expose compamp measurement blocks
-  cdata = cdata.reshape((header['number_of_half_frames'], header['number_of_subbands'], __bins_per_half_frame))  # expose compamp measurement blocks
+  header = compamp.header()
+ 
+  cdata = compamp.complex_data()
 
   #Apply Windowing and Padding
   cdata = np.multiply(cdata, window(cdata.shape[2]))  # window for smoothing sharp time series start/end in freq. dom.
@@ -154,13 +155,5 @@ def ac_viz(acdata):
 
   return acdata
 
-def raw_to_ac(raw_str, window = np.hanning):
-
-  header, packed_data = datareader.to_header_and_packed_data(raw_str)
-  cdata = datareader.packed_data_to_complex(packed_data)
-
-  acdata = complex_to_ac(header, cdata, window)
-  
-  return header, acdata
 
 
