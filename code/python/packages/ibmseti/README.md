@@ -77,6 +77,8 @@ In each of these, the `data` is the spectrogram.
 Before that, however, there are also features from the SignalDB that should be used. In particular,
 the position of the signal. This is best accomplished by using the 
 
+##### Features based on the Spectrogram
+
 ###### Standard Deviation of the projection of the spectrogram onto the time and frequency axis.
 
 ```
@@ -115,6 +117,22 @@ nth_moment_freq = ibmseti.features.moment( ibmseti.features.projection(data, axi
 tv_for_each_frequency = ibmseti.features.total_variation(data)
 tv = np.mean( tv_for_each_frequency )
 ```
+
+###### Excess Kurtosis
+
+Measures the *non-guassianity* of a distribution. Could be measure after projecting a spectrogram onto
+it's frequency-axis.
+
+```
+fourth_mom = ibmseti.features.moment( ibmseti.features.projection(data, axis=0), moment=4)
+variance = ibmseti.features.moment( ibmseti.features.projection(data, axis=0), moment=2)
+excess_kurtosis = fourth_mom/variance - 3
+```
+
+###### Linear fit to log of power histogram
+
+###### Shannon Entropy
+
 ##### Features based on the [First Difference](http://people.duke.edu/~rnau/411diff.htm)
 
 ###### Mean First Difference (along the time axis) of the spectrogram.
@@ -139,12 +157,6 @@ N = 4 #skewness
 nth_moment_time = np.mean( ibmseti.features.moment( first_diff_along_time, axis=0, moment=N))
 nth_moment_freq = np.mean( ibmseti.features.moment( first_diff_along_freq, axis=1, moment=N))
 ```
-##### Features based on the Gradient
-
-One can also calculate similar features (mean, N-th moments) based on the **gradient** of the signal along
-the time or frequency axis. Use `ibmseti.features.first_order_gradient` 
-or `ibmseti.features.second_order_gradient` to calculate the gradients. Then just as above with the
-`first difference`, one can calculate the various moments. 
 
 ###### Maximum Variation
 
@@ -156,20 +168,15 @@ max_var_t = np.max( ibmseti.features.maximum_variation(ibmseti.features.differen
 max_var_f = np.max( ibmseti.features.maximum_variation(ibmseti.features.difference(data, axis=1), axis=1))
 ```
 
-###### Excess Kurtosis
 
-Measures the *non-guassianity* of a distribution. Could be measure after projecting a spectrogram onto
-it's frequency-axis.
+##### Features based on the Gradient
 
-```
-fourth_mom = ibmseti.features.moment( ibmseti.features.projection(data, axis=0), moment=4)
-variance = ibmseti.features.moment( ibmseti.features.projection(data, axis=0), moment=2)
-excess_kurtosis = fourth_mom/variance - 3
-```
+One can also calculate similar features (mean, N-th moments) based on the **gradient** of the signal along
+the time or frequency axis. Use `ibmseti.features.first_order_gradient` 
+or `numpy.gradient` to calculate the gradients. Then just as above with the
+`first difference`, one can calculate the various moments and other features.
 
-###### Linear fit to log of power histogram
 
-###### Shannon Information
 
 
 ## Next Steps

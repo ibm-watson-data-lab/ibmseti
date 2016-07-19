@@ -140,18 +140,6 @@ def first_order_gradient(arr, axis=0):
   grad_arr = difference(arr, n=1, axis=axis)
   return np.insert(grad_arr, grad_arr.shape[axis], 0, axis=axis)
 
-def second_order_central_gradient(arr):
-  '''
-  This returns np.gradient(arr)
-
-  Returns the gradient of arr along a particular axis using
-  the second order central difference for array elements
-  that have 'neighbor' elements on both sides, 'central' elements.
-  For edge elements, either the first order forward-difference or backward-difference
-  value is used. 
-  '''
-  return np.gradient(arr)
-
 
 def total_variation(arr):
   '''
