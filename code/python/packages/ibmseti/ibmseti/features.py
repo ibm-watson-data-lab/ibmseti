@@ -153,7 +153,7 @@ def second_order_central_gradient(arr):
   return np.gradient(arr)
 
 
-def tv_1d(arr):
+def total_variation(arr):
   '''
   If arr is a 2D array (N X M), assumes that arr is a spectrogram with time along axis=0.
 
