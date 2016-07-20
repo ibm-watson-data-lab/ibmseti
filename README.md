@@ -3,4 +3,6 @@ IBM jStart team has joined with the SETI Institute to develop a Spark applicatio
 
 You can learn more by going to the [repo home page](http://ibmjstart.github.io/SETI) or by visiting the [project website](http://ibm.co/1LOc7eh).
 
+You can learn about the [Allen Telescope Array on the SETI Institute webpage](http://www.seti.org/ata). 
+
 This Spark project is implemented under the Apache 2.0 licensing terms. Please see [license.txt](https://github.com/ibmjstart/SETI/blob/master/License.txt).

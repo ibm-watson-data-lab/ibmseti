@@ -49,7 +49,8 @@ def complex_to_power(cdata, over_sampling):
   fftcdata = np.fft.fftshift(np.fft.fft(cdata), 2)  
   
   # slice out oversampled frequencies
-  fftcdata = fftcdata[:, :, int(cdata.shape[2]*over_sampling/2):-int(cdata.shape[2]*over_sampling/2)] 
+  if over_sampling > 0:
+    fftcdata = fftcdata[:, :, int(cdata.shape[2]*over_sampling/2):-int(cdata.shape[2]*over_sampling/2)] 
 
   # calculate power, normalize and amplify by factor 15 (what is the factor of 15 for?)
   fftcdata = np.multiply(fftcdata.real**2 + fftcdata.imag**2, 15.0/cdata.shape[2])

@@ -1,11 +1,14 @@
 #IBM SETI
 
-Code produced in partnership between the SETI Institute of Mountain View, CA and IBM. 
+The `ibmseti` package is used to read and analyze SETI Institute data generated from the Allen Telescope Array.
+It provides the essential code needed to get started reading the data, calculating spectrograms and autocorrelation
+spectra, and extracting some of the standard features from those results.
 
+This coode was produced in partnership between the SETI Institute of Mountain View, CA and IBM.
 
 ## Privacy Warning
 
-We send usage information of this library when you import the package and make particular calls. 
+We send usage information of this library when you import the package in your code and make particular calls.
 In particular, we collect the following environment variables:
 
   * USER
@@ -16,9 +19,9 @@ In the IBM Spark Service environment these envars contains unique identifiers fo
 
 If you wish to turn this off, you may do so by
 
-  ```python
-  ibmseti.callback.disable()
-  ```
+```python
+ibmseti.callback.disable()
+```
 
 
 ## Example User Code
@@ -34,190 +37,170 @@ If you wish to turn this off, you may do so by
 import ibmseti
 ```
 
-### Select an Interesting Target
+##### Obtaining Data
 
-Use [a source](http://phl.upr.edu/projects/habitable-exoplanets-catalog)
-to find interesting expolanet coordinates.
+[Click here for documentation and examples for the Public IBM+SETI Data Server REST API](https://github.com/ibm-cds-labs/setigopublic/blob/master/README.md), 
+which also briefly describes the SETI data. 
+[This IBM Spark notebook](https://console.ng.bluemix.net/data/notebooks/e17dc8c6-9c33-4947-be31-ee6b4b7e0888/view?access_token=6e95d320610f67467ba63bc89d9cec48faf847f2532fdd7523b0dd2ccb9ea346#) 
+gives an example use of the API and how to store the data in your Bluemix Account's Object Store instance.
 
-You'll need to know the right ascension (RA, in hours from 0.0 to 24) and declination 
-(DEC, in degrees from -90.0 to 90.0) of your exoplanet.
+### Read the Data
 
-All RA/DEC coordinates are references from the J2000 equinox. 
-
-### Query the SignalDB
-
-The Allen Telescope Array (ATA), the source of data for this project,
-records radio signals while pointing toward particular celestial coordinates, 
-usually targeting a known exoplanet.
-
-The SignalDB contains the preliminary analysis of that raw data. 
-You can use these rows of data to further refine your search. 
-
-In the next step you'll use the SignalDB to get the raw data for "Candidate" signals for
-a particular target. To do so, the `requests` library will be used to query our data server.
-This query has been built into our data server. You only need to know the celestial 
-coordinates of your target. A query to the database will be made to return the raw data
-for Candidate signals for those coordinates (within a range of 0.01 hours and 0.01 degrees)
-
-First, we can check to see if we have any data for a particular exoplanet. 
-
-Let's look up Kepler 1229b, found here http://phl.upr.edu/projects/habitable-exoplanets-catalog.
-This candidate has an Earth similarity index (ESI) of 0.73 (Earth = 1.0, Mars = 0.64, Jupiter = 0.12) 
-and is 770 light-years away. It is the 5th highest-ranked planet by ESI.
-
-You can take a look at this object in the sky: http://simbad.cfa.harvard.edu/simbad/sim-id?Ident=%408996422&Name=KOI-2418.01&submit=submit
-
-The ATA only records the celestial coordinates toward which it was pointing during data acquisition,
-and not any information about the exoplanet target. So, we must search our data
-by a small range about those celestial coordinates.
-
-Our data server is found at https://setigopublic.mybluemix.net. The query that returns
-the RA/DEC coordinates for which we have Candidate signals is https://setigopublic.mybluemix.net/v1/coordinates/aca.
-However, this will return all of the available coordinates. We can restrict the search by using 
-the `ramin`, `ramax`, `decmin` and `decmax` options.
-
-For example:
+The raw data (`compamp` or `archive-compamp` files) are read with a `ibmseti.compamp.Compamp` object.
 
 ```python
-import requests
-RA=19.832
-DEC=46.997
-box = 0.002
-
-# We want this query
-# http://setigopublic.mybluemix.net/v1/coordinates/aca?ramin=19.830&ramax=19.834&decmin=46.995&decmax=46.999
-
-params = {
-  'ramin':RA-box, 'ramax':RA+box, 'decmin':DEC-box, 'decmax':DEC+box
-}
-r = requests.get('https://setigopublic.mybluemix.net/v1/coordinates/aca',
-    params = params)
-
-import json
-print json.dumps(r.json(), indent=1)
+import ibmseti
+rawdata = open('path/to/data/2014-08-11/act17713/2014-08-11_05-50-10_UTC.act17713.dx2009.id-2.R.archive-compamp','r').read()
+aca = ibmseti.compamp.Compamp(rawdata)
 ```
 
-We get the following output:
+### Create Spectrogram and Plot
 
-  ```json
-  {
-    "returned_num_rows": 1,   
-    "skipped_num_rows": 0, 
-    "rows": [
-      {
-        "dec2000deg": 46.997, 
-        "number_of_rows": 392, 
-        "ra2000hr": 19.832
-      }
-    ], 
-    "total_num_rows": 1
-  }
-  ```
+Here, we show the code to produce a Spectrogram plot from a Compamp object with the `ibmseti.dsp` module.
 
-This means we have 392 "candidate" signals recorded while observing this Earth-like planet. 
+```python
+spectrogram = ibmseti.dsp.compamp_to_spectrogram(aca)
+time_bins = ibmseti.dsp.time_bins( aca.header() )
+freq_bins = ibmseti.dsp.frequency_bins( aca.header() )
 
-### Get Raw Data
+import matplotlib.pyplot as plt
+plt.ion()
+fig, ax = plt.subplots()
+#ax.pcolormesh(freq_bins, time_bins, spectrogram)
+```
 
-Given a particular celestial coordinate, we can obtain all of the raw "candidate" signal data.
-Again, we use our HTTP API to obtain these candidate events and the raw data associated
-with them. 
+### Feature Extraction
 
-The endpoint we will use is https://setigopublic.mybluemix.net/v1/aca/single.
+Here we show some features one may extract from a spectrogram with the `ibmset.features` module.
+In each of these, the `data` is the spectrogram.
 
-Continuing from the example above
+It should be noted that these features are experimental and may or may not have strong 
+impacts on classification. They are initial guesses made by a handful of SETI/NASA researchers, who
+make no guarantees about their usefulness. But we add them in the code here to get you started. 
+
+##### Features based on the Spectrogram
+
+###### Standard Deviation of the projection of the spectrogram onto the time and frequency axis.
+
+```
+std_time = math.sqrt(ibmseti.features.moment( ibmseti.features.projection(data, axis=1), moment=2))
+std_freq = math.sqrt(ibmseti.features.moment( ibmseti.features.projection(data, axis=0), moment=2))
+```
+
+###### Average Standard Deviation of the spectrogram along each slice of the time and frequency axis.
+
+```
+std_time = np.mean(np.sqrt(ibmseti.features.moment( data, axis=0, moment=2)))
+std_freq = np.mean(np.sqrt(ibmseti.features.moment( data, axis=1, moment=2)))
+```
+
+###### Average N-th moment of the spectrogram along each slice of the time and frequency axis.
+
+```
+N = 3 #kurtosis 
+N = 4 #skewness
+nth_moment_time = np.mean( ibmseti.features.moment( data, axis=0, moment=N))
+nth_moment_freq = np.mean( ibmseti.features.moment( data, axis=1, moment=N))
+```
+
+###### N-th moment of the projection of the spectrogram onto the time and frequency axis.
+
+```
+N = 3 #kurtosis
+N = 4 #skewness
+nth_moment_time = ibmseti.features.moment( ibmseti.features.projection(data, axis=1), moment=N)
+nth_moment_freq = ibmseti.features.moment( ibmseti.features.projection(data, axis=0), moment=N)
+```
+
+###### Mean [Total Variation](https://en.wikipedia.org/wiki/Total_variation) (along the time axis) of the spectrogram.
+
+```
+tv_for_each_frequency = ibmseti.features.total_variation(data)
+tv = np.mean( tv_for_each_frequency )
+```
+
+###### Excess Kurtosis
+
+Measures the *non-guassianity* of a distribution. Could be measure after projecting a spectrogram onto
+it's frequency-axis.
+
+```
+fourth_mom = ibmseti.features.moment( ibmseti.features.projection(data, axis=0), moment=4)
+variance = ibmseti.features.moment( ibmseti.features.projection(data, axis=0), moment=2)
+excess_kurtosis = fourth_mom/variance - 3
+```
+
+###### Linear fit to histogram of log of power
+
+###### Shannon Entropy (based on histogram of log of power)
+
+##### Features based on the [First Difference](http://people.duke.edu/~rnau/411diff.htm)
+
+###### Mean First Difference (along the time axis) of the spectrogram.
+
+```
+first_diff_along_time = ibmseti.features.difference(data, axis=0)
+first_diff_along_freq = ibmseti.features.difference(data, axis=1)
+
+fd_mean_along_time = np.mean(first_diff_along_time, axis=0).mean() 
+fd_mean_along_freq = np.mean(first_diff_along_freq, axis=1).mean()
+
+#same as first_diff_along_time.mean() because each element of the array is the same size!
+#the average of the averages is the same as the total average if the sets of averages all have the same cardinality
+```
+
+###### N-th moment of the first difference
+
+```
+N = 2 #variation
+N = 3 #kurtosis 
+N = 4 #skewness
+nth_moment_time = np.mean( ibmseti.features.moment( first_diff_along_time, axis=0, moment=N))
+nth_moment_freq = np.mean( ibmseti.features.moment( first_diff_along_freq, axis=1, moment=N))
+```
+
+###### Maximum Variation
+
+This can be calculated for the spectrogram, or for the first-difference, or gradient, 
+along the time- or frequency-axis.
+
+```
+max_var_t = np.max( ibmseti.features.maximum_variation(ibmseti.features.difference(data, axis=0), axis=0))
+max_var_f = np.max( ibmseti.features.maximum_variation(ibmseti.features.difference(data, axis=1), axis=1))
+```
 
 
-  ```python
-  ra = r.json()['rows'][0]['ra2000hr']
-  dec = r.json()['rows'][0]['dec2000deg']
+##### Features based on the Gradient
 
-  params = {'ra':ra, 'dec':dec}
+One can also calculate similar features (mean, N-th moments) based on the **gradient** of the signal along
+the time or frequency axis. Use `ibmseti.features.first_order_gradient` 
+or `numpy.gradient` to calculate the gradients. Then just as above with the
+`first difference`, one can calculate the various moments and other features.
 
-  r = requests.get('https://setigopublic.mybluemix.net/v1/aca/single',
-      params = params)
 
-  print json.dumps(r.json(), indent=1)
-  ```
 
-The location of the raw data on our Softlayer Object Store account are found in 
-the 'container' and 'objectname' fields. The objects are world-readable and do
-not require credentials to access. 
-
-The URL is contructed as
-
-  https://baseurl/auth_id/container/objectname
-
-where the `baseurl/auth_id` is
-
-  https://dal05.objectstorage.softlayer.net/v1/AUTH_4f10e4df-4fb8-44ab-8931-1529a1035371
-
-Searching through these results, one thing that you'll notice is that while there are 392
-"candidate" signals found in the raw data, it doesn't mean there are 392 raw data files. There
-will be duplicates, so you'll need to sort through them appropriately. If you do not and you use
-the same raw data multiple times within a machine-learning algorithm (to extract a set of features, 
-for example), you'll likely corrupt your results. 
-
-In addition to the container and objectname of the raw data, the preliminary signal analysis
-information is provided along with each file. (These are the data found in the SignalDB, described
-[here]()).
-
-You'll also notice there multiple files that point to the same SignalDB data, but with slightly
-different file names. The antenna data are decomposed into left- and right-circularly polarized
-signals and those data are stored in separate files; hence, the `L` and `R` components of the names.
-
-The raw data can be attained with a HTTP request
-
-  ```python
-  cont = r.json()['rows'][0]['container']
-  objname = r.json()['rows'][0]['objectname']
-  base_url = 'https://dal05.objectstorage.softlayer.net/v1/AUTH_4f10e4df-4fb8-44ab-8931-1529a1035371'
-  r = requests.get('/'.join([base_url, container, objname]))
-
-  rawdata = r.content
-  ```
-
-### Generate Spectrograms
-
-The raw data object attained from the Object Store contains a header, followed by the complex
-time-series data. 
-
-We now use a funciton in our library to convert each compamp data to 
-a spectrogram. 
-
-  ```python
-  import ibmseti
-  header, spectrogram = ibmseti.dsp.raw_to_spectrogram(rawdata)
-
-  #Plot with matplotlib
-  import matplotlib.pyplot as plt
-  plt.ion()
-
-  #transpose to get frequency bins on the horizontal and time on the vertical
-  spectrogram = spectrogram.transpose() 
-
-  fig, ax = plt.subplots()
-  ax.imshow(spectrogram)
-  plt.show()
-
-  ax.set_aspect(float(spectrogram.shape[1]) / spectrogram.shape[0])
-  ```
 
 ## Next Steps
 
-The basics of querying and retrieving the data should now be understood. Futher examples
-in our [notebooks]() folder will show how to apply these within the context of Spark, 
-how to extract features from the spectrograms and apply some machine-learning models. 
+More robust examples are found in the following shared IBM Spark notebooks. These examples show
+
+* [how to use the REST API and store data to your Bluemix Object Store](https://console.ng.bluemix.net/data/notebooks/e17dc8c6-9c33-4947-be31-ee6b4b7e0888/view?access_token=6e95d320610f67467ba63bc89d9cec48faf847f2532fdd7523b0dd2ccb9ea346#)
+* [retrieve the data from Object Store and calculate a spectrogram](https://console.ng.bluemix.net/data/notebooks/d9e06caa-ab8b-41d8-b9f7-507cea13f085/view?access_token=48f90032025617b309558b9734946c5bdc9cda5fdb1596ddb23899b05b162786)
+* [retrieve the data from Object Store and calculate features](https://console.ng.bluemix.net/data/notebooks/f234dad3-4966-41d3-8f21-16649a87ba3f/view?access_token=dc4926ef99723f7068e5c48315fe7510fde4eb4ae7c00ed4f7521b012b5a5db5)
+
+all using [the IBM Spark Service](http://www.ibm.com/analytics/us/en/technology/spark/) 
+in [Bluemix](https://console.ng.bluemix.net/docs/services/AnalyticsforApacheSpark/index.html). 
 
 It's now up to you to create new features and find better algorithms to search this
-vast amount of radio-signal data to look for signals that could be signs of intelligent
-life on other planets.
+vast amount of radio-signal data to find signals that could be signs of extraterrestrial intelligent
+life.
 
 ## Contributing
 
-Please feel free to fork this code and submit Pull Requests. The core research team 
-members from IBM, SETI and NASA will review your work and consider your algorithms for
-inclusion of our library. Perhaps they'll be useful enough to be included in future
-near-time analysis of data from the ATA and other SETI projects.
+Please feel free to fork this repository and submit Pull Requests. The core research team 
+members from SETI, NASA and IBM will review your work and consider your algorithms for
+inclusion in our library. We are hoping to find new algorithms that are useful enough to 
+be included in future real-time analysis of data from the ATA and other SETI projects.
 
 
 
