@@ -74,8 +74,9 @@ fig, ax = plt.subplots()
 Here we show some features one may extract from a spectrogram with the `ibmset.features` module.
 In each of these, the `data` is the spectrogram.
 
-Before that, however, there are also features from the SignalDB that should be used. In particular,
-the position of the signal. This is best accomplished by using the 
+It should be noted that these features are experimental and may or may not have strong 
+impacts on classification. They are initial guesses made by a handful of SETI/NASA researchers, who
+make no guarantees about their usefulness. But we add them in the code here to get you started. 
 
 ##### Features based on the Spectrogram
 
@@ -129,9 +130,9 @@ variance = ibmseti.features.moment( ibmseti.features.projection(data, axis=0), m
 excess_kurtosis = fourth_mom/variance - 3
 ```
 
-###### Linear fit to log of power histogram
+###### Linear fit to histogram of log of power
 
-###### Shannon Entropy
+###### Shannon Entropy (based on histogram of log of power)
 
 ##### Features based on the [First Difference](http://people.duke.edu/~rnau/411diff.htm)
 
