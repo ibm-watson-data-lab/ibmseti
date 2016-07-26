@@ -193,8 +193,7 @@ all using [the IBM Spark Service](http://www.ibm.com/analytics/us/en/technology/
 in [Bluemix](https://console.ng.bluemix.net/docs/services/AnalyticsforApacheSpark/index.html). 
 
 It's now up to you to create new features and find better algorithms to search this
-vast amount of radio-signal data to find signals that could be signs of extraterrestrial intelligent
-life.
+vast amount of radio-signal data for evidence of extraterrestrial intelligence.
 
 
 ### License 
