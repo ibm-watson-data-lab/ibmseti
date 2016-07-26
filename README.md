@@ -184,7 +184,8 @@ or `numpy.gradient` to calculate the gradients. Then just as above with the
 
 More robust examples are found in the following shared IBM Spark notebooks. These examples show
 
-* [how to use the REST API and store data to your Bluemix Object Store](https://console.ng.bluemix.net/data/notebooks/e17dc8c6-9c33-4947-be31-ee6b4b7e0888/view?access_token=6e95d320610f67467ba63bc89d9cec48faf847f2532fdd7523b0dd2ccb9ea346#)
+* [introduction to the REST API](https://console.ng.bluemix.net/data/notebooks/b05446cc-8303-4b1d-8150-2d55e49691ef/view?access_token=e70e82feeae786d3e57f2f918b4d22439723dd619e3059143942f0bdb4b9504c) 
+* [how to store data to your Bluemix Object Store](https://console.ng.bluemix.net/data/notebooks/6818fe79-84f5-4c22-a800-b80aa7696ef4/view?access_token=c1a0bf78689d45d01425a5b8a59c886da55a16eb17c4708791c14551c3c17b21)
 * [retrieve the data from Object Store and calculate a spectrogram](https://console.ng.bluemix.net/data/notebooks/d9e06caa-ab8b-41d8-b9f7-507cea13f085/view?access_token=48f90032025617b309558b9734946c5bdc9cda5fdb1596ddb23899b05b162786)
 * [retrieve the data from Object Store and calculate features](https://console.ng.bluemix.net/data/notebooks/f234dad3-4966-41d3-8f21-16649a87ba3f/view?access_token=dc4926ef99723f7068e5c48315fe7510fde4eb4ae7c00ed4f7521b012b5a5db5)
 
