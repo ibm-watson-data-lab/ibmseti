@@ -184,3 +184,62 @@ def tv_2d_isotropic(grad_0_arr, grad_1_arr):
   return np.sqrt(grad_0_arr**2 + grad_1_arr**2).sum()
 
 
+def entropy(data):
+  '''
+  Computes H(`data`) = Sum -1 * data_i * log(data_i)
+  And returns H(`data`), log(len(`data`))
+
+  If `data` is a PDF, H(`data`) is the entropy of the system in 'natural' units. 
+  (The log is the 'natural log', ln)
+
+  The maximum possible entropy of `data` is log( len(`data`) ).
+
+  If `data` is a PDF and is normalized ( Sum data_i * bin_size = 1), then
+  the normalized entropy is equal to H(`data`) / log(len(`data`)) and will
+  be in the range of [0, 1]. If `data` is a completely flat PDF, then 
+  the normalized entropy will equal 1. If the `data` is a histogram with 
+  bin counts = 0 except for one bin, then the entropy will be 0. 
+
+  There are three good ways to generate a histogram from the values in the
+  spectrogram. The difference is how to define the bins. 1) by hand, 2) with numpy
+  3) with astroML. It is recommended to use auto-generated binning from numpy or astroML.
+  
+  1. By Hand
+
+  If you choose to set the bin size / number of bins in a histogram by hand, you 
+  should be careful about how you handle spectrogram values that are outside of your 
+  largest bin -- that is, values outside of your bin range. For example, assume
+  that you've decide to bin the spectrogram values into 250 bins between the values of 0 and 250. If you
+  observe a spectrogram that has a spectrogram value = 1000, then into which bin should to 
+  place that measure? If you drop that value, you're essentially removing a potential 
+  signal. It is suggested that you use the numpy.clip function in order to make the 
+  largedst bin in your histogram contain the number of pixels with a value equal to or 
+  greater than the largest bin edge. 
+
+    binedges = range(0,251)
+    my_hist, _ = np.histogram(np.clip(spectrogram, 0, 250), bins=binedges, density=True)
+
+  2. Numpy
+
+  Numpy contains ways to automatically choose the bins for your based on your `data`. 
+
+  See http://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram.html
+
+  3. astroML
+  AstroML also provides automatic bin determination and includes the Bayesain Block method,
+  which is based on a paper by SETI scientist, Jeff Scargle. 
+
+  http://www.astroml.org/user_guide/density_estimation.html#bayesian-blocks-histograms-the-right-way
+
+  It is suggested to use the following measures as features:
+
+    spectrogram.min, spectrogram.max, number_of_bins, entropy, max_entropy, normalized_entropy.
+
+  If `data` is NOT a PDF, then you're on your own to interpret the results. For example,
+    
+    ent, max = ibmseti.features.entropy(spectrogram.flatten())
+
+  '''
+  dd = map(lambda x: -x*log(x) if x else 0, data)
+  return sum(dd), log(len(dd))
+
