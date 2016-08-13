@@ -184,21 +184,44 @@ def tv_2d_isotropic(grad_0_arr, grad_1_arr):
   return np.sqrt(grad_0_arr**2 + grad_1_arr**2).sum()
 
 
-def entropy(data):
+def entropy(p, w):
   '''
-  Computes H(`data`) = Sum -1 * data_i * log(data_i)
-  And returns H(`data`), log(len(`data`))
+  Computes the entropy for a discrete probability distribution function, as
+  represented by a histogram, `p`, with bin sizes `w`,
 
-  If `data` is a PDF, H(`data`) is the entropy of the system in 'natural' units. 
+    H(`p`) = Sum -1 * p_i * log(p_i / w_i)
+  
+  Also computes the maximum allowed entropy for a histogram with bin sizes `w`.
+
+    H_max = log( Sum w_i^2 ) * (1 / Sum w_i^2) * Sum w_i
+
+  and returns both as a tuple ( H(`p`) , H_max ).
+
+  H(`p`) is the entropy of the system in 'natural' units. 
   (The log is the 'natural log', ln)
 
-  The maximum possible entropy of `data` is log( len(`data`) ).
+  Both `p` and `w` must be Numpy arrays.
 
-  If `data` is a PDF and is normalized ( Sum data_i * bin_size = 1), then
-  the normalized entropy is equal to H(`data`) / log(len(`data`)) and will
-  be in the range of [0, 1]. If `data` is a completely flat PDF, then 
-  the normalized entropy will equal 1. If the `data` is a histogram with 
-  bin counts = 0 except for one bin, then the entropy will be 0. 
+  If `p` iis normalized to 1 ( Sum p_i * w_i = 1), then
+  the normalized entropy is equal to H(`p`) / H_max and will
+  be in the range [0, 1]. 
+
+  For example, if `p` is a completely flat PDF (a uniform distribution), then 
+  the normalized entropy will equal 1, indicating maximum amount of disorder. 
+  (This is easily shown for the case where w_i = 1.)
+
+  If the `p_i` is zero for all i except j and p_j = 1, then the entropy will be 0,
+  indicating no disorder.
+
+  One can use this entropy measurement to search for signals in the spectrogram. 
+  First we need to build a histogram of the measured power values in the spectrogram. 
+  This histogram represents an estimate of the probability distribution function of the
+  observed power in the spectrogram. 
+  
+  If the spectrogram is entirely noise, then creating a histogram should be quite flat and
+  the normalized entropy ( H(p) / H_max ) will approach 1. If there is a significant signal
+  in the spectrogram, then the histogram will not be flat and the normalized entropy will 
+  be less than 1.  
 
   There are three good ways to generate a histogram from the values in the
   spectrogram. The difference is how to define the bins. 1) by hand, 2) with numpy
@@ -216,14 +239,17 @@ def entropy(data):
   largedst bin in your histogram contain the number of pixels with a value equal to or 
   greater than the largest bin edge. 
 
-    binedges = range(0,251)
-    my_hist, _ = np.histogram(np.clip(spectrogram, 0, 250), bins=binedges, density=True)
+    bin_edges = range(0,251)
+    p, _ = np.histogram(np.clip(spectrogram, 0, 250), bins=bin_edges, density=True)
+    w = np.diff(bin_edges)
 
   2. Numpy
 
-  Numpy contains ways to automatically choose the bins for your based on your `data`. 
+  Numpy contains ways to automatically choose the bins for your based on your `p`. 
 
   See http://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram.html
+
+  w = np.diff(bin_edges)
 
   3. astroML
   AstroML also provides automatic bin determination and includes the Bayesain Block method,
@@ -231,15 +257,29 @@ def entropy(data):
 
   http://www.astroml.org/user_guide/density_estimation.html#bayesian-blocks-histograms-the-right-way
 
-  It is suggested to use the following measures as features:
+
+  It is suggested to use any of the following measures as features:
 
     spectrogram.min, spectrogram.max, number_of_bins, entropy, max_entropy, normalized_entropy.
 
-  If `data` is NOT a PDF, then you're on your own to interpret the results. For example,
+  If `p` is NOT a PDF, then you're on your own to interpret the results. In this case, you 
+  may set `w` = None and the calculation will assume w=1 for all bins. Also, the maximum entropy
+  will be returned as None. For example,
     
-    ent, max = ibmseti.features.entropy(spectrogram.flatten())
+    ent, _ = ibmseti.features.entropy(spectrogram.flatten(), None)
 
   '''
-  dd = map(lambda x: -x*log(x) if x else 0, data)
-  return sum(dd), log(len(dd))
+  H_max = True
+
+  if w == None:
+    w = np.ones(len(p))
+    H_max = False
+
+  H_p = np.sum(map(lambda x: -x[0]*log(x[0]/x[1]) if x else 0, zip(p, w)))
+
+  if H_max:
+    sw2 = np.sum(w**2)
+    H_max = log(sw2) * np.sum(w) / sw2
+
+  return H_p, H_max
 
