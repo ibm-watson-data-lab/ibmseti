@@ -286,7 +286,7 @@ def entropy(p, w):
     w = np.ones(len(p))
     H_max = False
 
-  H_p = np.sum(map(lambda x: -x[0]*log(x[0]/x[1]) if x else 0, zip(p, w)))
+  H_p = np.sum(map(lambda x: -x[0]*log(x[0]/x[1]) if x[0] else 0, zip(p, w)))
 
   if H_max:
     sw2 = np.sum(w**2)
