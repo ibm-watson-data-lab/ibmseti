@@ -130,9 +130,28 @@ variance = ibmseti.features.moment( ibmseti.features.projection(data, axis=0), m
 excess_kurtosis = fourth_mom/variance - 3
 ```
 
-###### Linear fit to histogram of log of power
-
 ###### Shannon Entropy (based on histogram of log of power)
+
+One can calculate the `entropy` of the distribution of the observed power found in the spectrogram.
+The `ibmseti.features.entropy` function computes the entropy of a histogram of the power
+values measured in the spectrogram. The histogram represents a probability distribution function
+of the values. You must build the histogram on your own, however. And you should also be
+sure that your histogram is normalized to 1 (Sum h_i * bin_size_i  = 1). 
+
+When used properly, this could score each spectrogram with a value between 0 and 1, where 1
+represents pure noise and 0 would represent a maximally large signal (though in reality,
+expect signals to have a value between 0.5 and 1, and for small signals to be closer
+to 1.0 than to 0.5). 
+
+See the [docstring for details on how to build a histogram and use this calculation.](ibmseti/features.py#L188-L282)
+
+```
+p, bin_edges = np.histogram(spectrogram.flatten(), bins='FD')
+w = np.diff(bin_edges)
+h_p, h_max = ibmseti.features.entropy(p,w)
+
+h_normal = h_p / h_max  #h_normal should range between 0 and 1.
+```
 
 ##### Features based on the [First Difference](http://people.duke.edu/~rnau/411diff.htm)
 
