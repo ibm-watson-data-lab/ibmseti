@@ -31,13 +31,8 @@ ibmseti.callback.disable()
     pip install ibmseti
 
 
-### Setup
 
-```python
-import ibmseti
-```
-
-##### Obtaining Data
+### Obtaining Data
 
 [Click here for documentation and examples for the Public IBM+SETI Data Server REST API](https://github.com/ibm-cds-labs/setigopublic/blob/master/README.md), 
 which also briefly describes the SETI data. 
@@ -77,6 +72,11 @@ In each of these, the `data` is the spectrogram.
 It should be noted that these features are experimental and may or may not have strong 
 impacts on classification. They are initial guesses made by a handful of SETI/NASA researchers, who
 make no guarantees about their usefulness. But we add them in the code here to get you started. 
+
+Also, the spectrograms are relatively large. One may consider reducing the size of the spectrogram
+using https://gist.github.com/derricw/95eab740e1b08b78c03f. Calculations done with a 
+spectogram of reduced size can be significantly faster. For example, one can reduce the
+size from 129x6144 to 43x192: `spectrogram = bin_ndarray(spectrogram, (43,192), operation='sum')`) 
 
 ##### Features based on the Spectrogram
 
@@ -130,9 +130,51 @@ variance = ibmseti.features.moment( ibmseti.features.projection(data, axis=0), m
 excess_kurtosis = fourth_mom/variance - 3
 ```
 
-###### Linear fit to histogram of log of power
+##### Entropy (based on histogram of log of power)
 
-###### Shannon Entropy (based on histogram of log of power)
+The entropy of a signal is a measure of the amount of order/disorder in the system. In information
+theory, it is the measure of the average amount of "information" in a signal. 
+
+The `ibmseti.features.entropy` function computes the entropy of a histogram of the power
+values measured in the spectrogram. The histogram represents an estimate of probability distribution function
+of the power. You must build the histogram on your own, however. And you should also be
+sure that your histogram is normalized to 1 (Sum h_i * bin_size_i  = 1). 
+
+When used properly, this could score each spectrogram with a value between 0 and 1, where 1
+represents pure noise and 0 would represent a maximally large signal, or amount of information.
+(Though in reality, expect signals to have a value between 0.5 and 1, and for small signals to 
+be closer to 1.0 than to 0.5.) 
+
+The use of this measure depends significantly on how the histogram is created. There are 
+multiple ways this can be done. See the [docstring for details on how to build a histogram and use this calculation.](ibmseti/features.py#L188-L282)
+
+Example: 
+
+```
+bin_edges = range(0,501)
+p, _ = np.histogram(np.clip(spectrogram.flatten(), 0, 500), bins=bin_edges, density=True)
+w = np.diff(bin_edges)
+h_p, h_max = ibmseti.features.entropy(p,w)
+
+h_normal = h_p / h_max  #h_normal should range between 0 and 1.
+```
+
+Alternatively, it may be interesting to use the Baysian Block method supplied by AstroML
+to compute a histogram from the spectrogram. However, it is unclear how to interpret
+the `entropy` extracted from this as it seems to be close to zero for no signals and increasing
+for the presense of a signal (found in some limited internal testing). Additionally, the 
+number of bins automatically determined may itself be an interesting feature
+
+```
+import astroML.density_estimation 
+
+bin_edges = astroML.density_estimation.bayesian_blocks(spectrogram.flatten())
+p, _ = np.histogram(spectrogram.flatten(), bins=bin_edges, density=True)
+w = np.diff(bin_edges)
+
+h_p, h_max = ibmseti.features.entropy(p,w)
+```
+
 
 ##### Features based on the [First Difference](http://people.duke.edu/~rnau/411diff.htm)
 
