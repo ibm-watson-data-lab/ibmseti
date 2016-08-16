@@ -23,6 +23,7 @@ contain documentation that explicitly show how they are used with SETI data.
 
 import numpy as np
 import scipy.stats
+import math
 
 def difference(arr, n=1, axis=0, **kwargs):
   '''
@@ -189,21 +190,18 @@ def entropy(p, w):
   Computes the entropy for a discrete probability distribution function, as
   represented by a histogram, `p`, with bin sizes `w`,
 
-    H(`p`) = Sum -1 * p_i * log(p_i / w_i)
+   h_p = Sum -1 * p_i * ln(p_i / w_i)
   
   Also computes the maximum allowed entropy for a histogram with bin sizes `w`.
 
-    H_max = log( Sum w_i^2 ) * (1 / Sum w_i^2) * Sum w_i
+    h_max = ln( Sum w_i )
 
-  and returns both as a tuple ( H(`p`) , H_max ).
-
-  H(`p`) is the entropy of the system in 'natural' units. 
-  (The log is the 'natural log', ln)
+  and returns both as a tuple (h_p , h_max ). The entropy is in 'natural' units.
 
   Both `p` and `w` must be Numpy arrays.
 
-  If `p` iis normalized to 1 ( Sum p_i * w_i = 1), then
-  the normalized entropy is equal to H(`p`) / H_max and will
+  If `p` is normalized to 1 ( Sum p_i * w_i = 1), then
+  the normalized entropy is equal toh_p / h_max and will
   be in the range [0, 1]. 
 
   For example, if `p` is a completely flat PDF (a uniform distribution), then 
@@ -218,79 +216,96 @@ def entropy(p, w):
   This histogram represents an estimate of the probability distribution function of the
   observed power in the spectrogram. 
   
-  If the spectrogram is entirely noise, then creating a histogram should be quite flat and
-  the normalized entropy ( H(p) / H_max ) will approach 1. If there is a significant signal
+  If the spectrogram is entirely noise, the resulting histogram should be quite flat and
+  the normalized entropy ( h_p / h_max ) will approach 1. If there is a significant signal
   in the spectrogram, then the histogram will not be flat and the normalized entropy will 
   be less than 1.  
 
-  There are three good ways to generate a histogram from the values in the
-  spectrogram. The difference is how to define the bins. 1) by hand, 2) with numpy
-  3) with astroML. It is recommended to use auto-generated binning from numpy or astroML.
-  
-  1. By Hand
+  The decision that needs to be made is the number of bins and the bin size. And unfortunately,
+  the resulting entropy calculated will depend on the binning. 
 
-  If you choose to set the bin size / number of bins in a histogram by hand, you 
-  should be careful about how you handle spectrogram values that are outside of your 
-  largest bin -- that is, values greater than the upper-edge value of your last bin.
-  For example, assume that you've decided to bin the spectrogram values into 500 bins
-  between the values of 0 and 500. If you have a spectrogram that has a some values
-  equal to 1000, then into which bin should you place that measure? If you drop that
-  value, you're essentially removing a potential signal. It is suggested that you use
-  the numpy.clip function in order to make the largest bin in your histogram contain
-  the number of values with a value equal to or greater than the lower edge of your
-  last bin. 
+  Based on testing and interpretibility, we recommend to use a fixed number of bins that either
+  span the full range of the power values in the spectrogram (0 to spectrogram.max()),
+  or span a fixed range (for example, from 0 to 500). 
+
+  For example, you may set the range equal to the range of the values in the spectrogram.
+
+    bin_edges = range(0,int(spectrogram.max) + 2) #add 1 to round up, and one to set the right bin edge.
+    p, _ = np.histogram(spectrogram.flatten(), bins=bin_edges, density=True)
+    w = np.diff(bin_edges)
+    h_p, h_max = ibmseti.features.entropy(p,w)
+
+  If you choose to fix the range of the histogram, it is highly recommended that you use 
+  `numpy.clip` to ensure that any of the values in the spectrogram that are greater than 
+  your largest bin are not thrown away!
+
+  For example, if you decide on a fixed range between 0 and 500, and your spectrogram
+  contains a value of 777, the following code would produce a histogram where that 777 value
+  is not present in the count.
+
+    bin_edges = range(0,501)
+    p, _ = np.histogram(spectrogram.flatten(), bins=bin_edges, density=True)
+    w = np.diff(bin_edges)
+    h_p, h_max = ibmseti.features.entropy(p,w)
+
+  But if you clip the spectrogram, you can interpret the last bin as being "the number 
+  of spectrogram values equal to or greater than the lower bin edge".
 
     bin_edges = range(0,501)
     p, _ = np.histogram(np.clip(spectrogram.flatten(), 0, 500), bins=bin_edges, density=True)
     w = np.diff(bin_edges)
     h_p, h_max = ibmseti.features.entropy(p,w)
 
-  2. Numpy
-
-  Numpy contains ways to automatically choose the bins for your based on your `p`. 
-
-  See http://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram.html
-
-  p, bin_edges = np.histogram(spectrogram.flatten(), bins='FD')
-  w = np.diff(bin_edges)
-  h_p, h_max = ibmseti.features.entropy(p,w)
-
-  3. astroML
-  AstroML also provides automatic bin determination and includes the Bayesain Block method,
-  which is based on a paper by SETI scientist, Jeff Scargle. 
-
-  http://www.astroml.org/user_guide/density_estimation.html#bayesian-blocks-histograms-the-right-way
-  import astroML.plotting
-
-  p, bins, _ = astroML.plotting.hist(spectrogram.flatten(), bins='blocks'
-  w = np.diff(bins)
-  h_p, h_max = ibmseti.features.entropy(p,w)
 
   It is suggested to use any of the following measures as features:
 
-    spectrogram.min, spectrogram.max, number_of_bins, entropy, max_entropy, normalized_entropy.
+    bin range, spectrogram.min, spectrogram.max, number_of_bins, log(number_of_bins) 
+    entropy, max_entropy, normalized_entropy.
 
+  Automatic Binning:
+
+  While Numpy and AstroML offer ways of automatically binning the data, it is unclear if this
+  is a good approach for entropy calculation -- especially when wishing to compare the value
+  across different spectrogram. The automatic binning tends to remove disorder in 
+  the set of values, making the histogram smoother and more ordered than that data actually are.
+  This is true of automatic binning with fixed sizes (such as with the 'rice', and 'fd' options in
+  numpy.histogram), or with the variable sized arrays as can be calculated with Bayesian Blocks
+  with astroML. However, nothing is ruled out. In preliminary testing 
+  the calculated entropy from a histogram calculated with Bayesian Block binning seemed to be more
+  sensitive to a simulated signal than using fixed binning. However, it's unclear how to
+  interpret the results because "h_p/h_max" *increased* with the presence of a signal. 
+
+  **It is possible that the calculation of h_max is done incorrectly. Please check my work!**
+
+  It may even be that simply the total number of bins created by the Bayesian Block method would 
+  be a suitable feature. For a completely flat distribution, there will only be one bin. If the 
+  data contains significant variation in power levels, the Bayesian Block method will produce more 
+  bins.  More testing is required and your mileage may vary. 
+
+    import astroML.plotting 
+
+    bin_edges = astroML.density_estimation.bayesian_blocks(spectrogram.flatten())
+    p, _ = np.histogram(spectrogram.flatten(), bins=bin_edges, density=True)
+    w = np.diff(bin_edges)
+
+    h_p, h_max = ibmseti.features.entropy(p,w)
+
+
+  "Entropy" of raw data.
 
   If `p` is NOT a PDF, then you're on your own to interpret the results. In this case, you 
-  may set `w` = None and the calculation will assume w_i = 1 for all i. Also, the maximum entropy
-  will be returned as None (if you need h_max, for w_i = 1, it would be log(len(p))). 
+  may set `w` = None and the calculation will assume w_i = 1 for all i. 
 
   For example,
     
     h_p, _ = ibmseti.features.entropy(spectrogram.flatten(), None)
 
   '''
-  H_max = True
-
-  if w == None:
+  if w is None:
     w = np.ones(len(p))
-    H_max = None
 
-  H_p = np.sum(map(lambda x: -x[0]*log(x[0]/x[1]) if x[0] else 0, zip(p, w)))
+  h_p = np.sum(map(lambda x: -x[0]*math.log(x[0]/x[1]) if x[0] else 0, zip(p, w)))
+  h_max = math.log(np.sum(w))
 
-  if H_max:
-    sw2 = np.sum(w**2)
-    H_max = log(sw2) * np.sum(w) / sw2
-
-  return H_p, H_max
+  return h_p, h_max
 

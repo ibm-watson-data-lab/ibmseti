@@ -130,28 +130,51 @@ variance = ibmseti.features.moment( ibmseti.features.projection(data, axis=0), m
 excess_kurtosis = fourth_mom/variance - 3
 ```
 
-###### Shannon Entropy (based on histogram of log of power)
+##### Entropy (based on histogram of log of power)
 
-One can calculate the `entropy` of the distribution of the observed power found in the spectrogram.
+The entropy of a signal is a measure of the amount of order/disorder in the system. In information
+theory, it is the measure of the average amount of "information" in a signal. 
+
 The `ibmseti.features.entropy` function computes the entropy of a histogram of the power
-values measured in the spectrogram. The histogram represents a probability distribution function
-of the values. You must build the histogram on your own, however. And you should also be
+values measured in the spectrogram. The histogram represents an estimate of probability distribution function
+of the power. You must build the histogram on your own, however. And you should also be
 sure that your histogram is normalized to 1 (Sum h_i * bin_size_i  = 1). 
 
 When used properly, this could score each spectrogram with a value between 0 and 1, where 1
-represents pure noise and 0 would represent a maximally large signal (though in reality,
-expect signals to have a value between 0.5 and 1, and for small signals to be closer
-to 1.0 than to 0.5). 
+represents pure noise and 0 would represent a maximally large signal, or amount of information.
+(Though in reality, expect signals to have a value between 0.5 and 1, and for small signals to 
+be closer to 1.0 than to 0.5.) 
 
-See the [docstring for details on how to build a histogram and use this calculation.](ibmseti/features.py#L188-L282)
+The use of this measure depends significantly on how the histogram is created. There are 
+multiple ways this can be done. See the [docstring for details on how to build a histogram and use this calculation.](ibmseti/features.py#L188-L282)
+
+Example: 
 
 ```
-p, bin_edges = np.histogram(spectrogram.flatten(), bins='FD')
+bin_edges = range(0,501)
+p, _ = np.histogram(np.clip(spectrogram.flatten(), 0, 500), bins=bin_edges, density=True)
 w = np.diff(bin_edges)
 h_p, h_max = ibmseti.features.entropy(p,w)
 
 h_normal = h_p / h_max  #h_normal should range between 0 and 1.
 ```
+
+Alternatively, it may be interesting to use the Baysian Block method supplied by AstroML
+to compute a histogram from the spectrogram. However, it is unclear how to interpret
+the `entropy` extracted from this as it seems to be close to zero for no signals and increasing
+for the presense of a signal (found in some limited internal testing). Additionally, the 
+number of bins automatically determined may itself be an interesting feature
+
+```
+import astroML.density_estimation 
+
+bin_edges = astroML.density_estimation.bayesian_blocks(spectrogram.flatten())
+p, _ = np.histogram(spectrogram.flatten(), bins=bin_edges, density=True)
+w = np.diff(bin_edges)
+
+h_p, h_max = ibmseti.features.entropy(p,w)
+```
+
 
 ##### Features based on the [First Difference](http://people.duke.edu/~rnau/411diff.htm)
 
