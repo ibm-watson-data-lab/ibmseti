@@ -31,13 +31,8 @@ ibmseti.callback.disable()
     pip install ibmseti
 
 
-### Setup
 
-```python
-import ibmseti
-```
-
-##### Obtaining Data
+### Obtaining Data
 
 [Click here for documentation and examples for the Public IBM+SETI Data Server REST API](https://github.com/ibm-cds-labs/setigopublic/blob/master/README.md), 
 which also briefly describes the SETI data. 
@@ -77,6 +72,11 @@ In each of these, the `data` is the spectrogram.
 It should be noted that these features are experimental and may or may not have strong 
 impacts on classification. They are initial guesses made by a handful of SETI/NASA researchers, who
 make no guarantees about their usefulness. But we add them in the code here to get you started. 
+
+Also, the spectrograms are relatively large. One may consider reducing the size of the spectrogram
+using https://gist.github.com/derricw/95eab740e1b08b78c03f. Calculations done with a 
+spectogram of reduced size can be significantly faster. For example, one can reduce the
+size from 129x6144 to 43x192: `spectrogram = bin_ndarray(spectrogram, (43,192), operation='sum')`) 
 
 ##### Features based on the Spectrogram
 

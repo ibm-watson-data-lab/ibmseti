@@ -230,7 +230,7 @@ def entropy(p, w):
 
   For example, you may set the range equal to the range of the values in the spectrogram.
 
-    bin_edges = range(0,int(spectrogram.max) + 2) #add 1 to round up, and one to set the right bin edge.
+    bin_edges = range(0,int(spectrogram.max()) + 2) #add 1 to round up, and one to set the right bin edge.
     p, _ = np.histogram(spectrogram.flatten(), bins=bin_edges, density=True)
     w = np.diff(bin_edges)
     h_p, h_max = ibmseti.features.entropy(p,w)
@@ -256,6 +256,12 @@ def entropy(p, w):
     w = np.diff(bin_edges)
     h_p, h_max = ibmseti.features.entropy(p,w)
 
+  You can also choose to fix the number of bins
+
+    bins = 50
+    p, bin_edges = np.histogram(spectrogram.flatten(), bins=bins, density=True)
+    w = np.diff(bin_edges)
+    h_p, h_max = ibmseti.features.entropy(p,w)
 
   It is suggested to use any of the following measures as features:
 
@@ -267,17 +273,17 @@ def entropy(p, w):
   While Numpy and AstroML offer ways of automatically binning the data, it is unclear if this
   is a good approach for entropy calculation -- especially when wishing to compare the value
   across different spectrogram. The automatic binning tends to remove disorder in 
-  the set of values, making the histogram smoother and more ordered than that data actually are.
+  the set of values, making the histogram smoother and more ordered than the data actually are.
   This is true of automatic binning with fixed sizes (such as with the 'rice', and 'fd' options in
   numpy.histogram), or with the variable sized arrays as can be calculated with Bayesian Blocks
-  with astroML. However, nothing is ruled out. In preliminary testing 
+  with astroML. However, nothing is ruled out. In preliminary testing,
   the calculated entropy from a histogram calculated with Bayesian Block binning seemed to be more
   sensitive to a simulated signal than using fixed binning. However, it's unclear how to
-  interpret the results because "h_p/h_max" *increased* with the presence of a signal. 
+  interpret the results because "h_p/h_max" *increased* with the presence of a signal and exceeded 1. 
 
-  **It is possible that the calculation of h_max is done incorrectly. Please check my work!**
+  **It is likely that the calculation of h_max is done incorrectly. Please check my work!**
 
-  It may even be that simply the total number of bins created by the Bayesian Block method would 
+  It may even be that the total number of bins created by the Bayesian Block method would 
   be a suitable feature. For a completely flat distribution, there will only be one bin. If the 
   data contains significant variation in power levels, the Bayesian Block method will produce more 
   bins.  More testing is required and your mileage may vary. 
@@ -290,6 +296,7 @@ def entropy(p, w):
 
     h_p, h_max = ibmseti.features.entropy(p,w)
 
+  Also to note: Using astroML.density_estimation.bayesian_blocks takes prohibitively long!
 
   "Entropy" of raw data.
 
