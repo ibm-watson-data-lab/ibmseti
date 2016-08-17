@@ -35,7 +35,7 @@ setup_args = {
     'version': __version__,
     'author': 'gadamc',
     'author_email': 'adamcox@us.ibm.com',
-    'url': 'https://github.com/gadamc/SETI',
+    'url': 'https://github.com/ibm-cds-labs/ibmseti',
     'packages': ['ibmseti'],
     'classifiers': [
           'Intended Audience :: Developers',
