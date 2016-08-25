@@ -1,8 +1,6 @@
 # SETI Public Data Server
 
-The SETI Public Server delivers SETI data for public consumption, as part of the [IBM+SETI partnership](http://ibmjstart.github.io/SETI/). 
-
-## Data Description
+A Go-based server for Public SETI data sets, part of the [IBM+SETI partnership](http://ibmjstart.github.io/SETI/). 
 
 The SETI Institute utilizes the Allen Telescope Array (ATA) to search for radio signals from intelligent life
 beyond our Solar System. Nearly each night, the ATA observes radio frequencies in the ~1-10 GHz 
@@ -18,17 +16,16 @@ description of the values in SignalDB are found [here](). Currently, the SignalD
 `compamp` and `archive-compamp` files are stored in [IBM Object Store](https://console.ng.bluemix.net/catalog/object-storage/).
 
 The raw data for a signal that is categorized as a `Candidate` is stored as an `archive-compamp` file, 
-while other types signals (such as Radio Frequncy Interference, RFI) are stored as `compamp` files.
-The only difference between these types is that `archive-compamp` files contains signal across
-the entire bandwith observed by the ATA, while the `compamp` files contains just the data for the
-subband where `non-Candidate` signals was observed. 
+while other types signals are stored as `compamp` files. The only difference between these file types
+is that the `archive-compamp` contains signal across the entire bandwith observed by the ATA, while
+the `compamp` files contains just the data for the subband where `non-Candidate` signals was observed. 
 
-This API allows you to search for `Candidate`/`archive-compamp` files based upon their position
-in the sky, the RA/DEC values. (The `compamp` files are not yet available.) 
-The SETI Public Data server will return to you the SignalDB row for each raw `archive-compamp`
-file, along with a temporary URL to download the `archive-compamp` file.
+This REST API allows you to search for `Candidate`/`archive-compamp` files based upon their position
+in the sky, the RA/DEC values. It will return to you the SignalDB row for each raw `archive-compamp`
+file, along with a temporary URL to download the `archive-compamp` file
 
 Further enhancements to this API will allow for finding data based on other attributes.
+
 
 ## API Reference
 
@@ -36,7 +33,8 @@ Further enhancements to this API will allow for finding data based on other attr
 
   * [**/v1/coordinates/aca**](#celestial-coordinates-of-candidate-events)
   * [**/v1/aca/meta/{ra}/{dec}**](#meta-data-and-location-of-candidate-events)
-  * [**/v1/token**](#token-for-raw-data-access)
+  * [**/v1/aca/meta/spacecraft**](#meta-data-and-location-of-candidate-events-for-pacecraft)
+  * [**/v1/token/{username}/{email address}**](#token-for-raw-data-access)
   * [**/v1/data/url/{container}/{objectname}**](#temporary-url-for-raw-data)
 
 
@@ -421,6 +419,76 @@ the results.
     GET /v1/aca/meta/19.832/46.997?skip=400
     ... until `returned_num_rows` == 0
     ```
+
+
+### Meta-data and location of Candidate Events For Spacecraft
+##### GET /v1/aca/meta/spacecroft
+
+**Description**: This method returns results exactly like [/v1/aca/meta/{ra}/{dec}](),
+except that it returns all data for observed spacecraft (mainly satellites). 
+This returns a JSON object containing the meta-data and file location of 
+each candidate event. The meta-data are the data found
+in the [SignalDB](https://github.com/ibmjstart/SETI/docs/signaldb.md). 
+There may be tens to thousands of candidate events for a particular position.
+The structure of the JSON document is
+
+```
+{
+ "returned_num_rows": 10, 
+ "skipped_num_rows": 100, 
+ "rows": [
+  {
+    "uniqueid": "exoplanets8ghz_10640_2009_0_559913",
+    "time": "2014-03-14T04:02:04-07:00",
+    "acttype": "target",
+    "tgtid": 175,
+    "catalog": "spacecraft",
+    "ra2000hr": -99,
+    "dec2000deg": -99,
+    "power": 1354.566,
+    "snr": -1.881,
+    "freqmhz": 2217.520738889,
+    "drifthzs": -0.09,
+    "widhz": 5.556,
+    "pol": "both",
+    "sigtyp": "CwC",
+    "pperiods": null,
+    "npul": null,
+    "inttimes": 94,
+    "tscpazdeg": 0,
+    "tscpeldeg": 0,
+    "beamno": 2,
+    "sigclass": "Cand",
+    "sigreason": "Confrm",
+    "candreason": "Confrm",
+    "container": "setiCompAmp",
+    "objectname": "2014-03-14/act10640/2014-03-14_04-02-04_UTC.act10640.dx2009.id-0.R.archive-compamp"
+  }, 
+  ...
+  "total_num_rows": 17394
+}
+```
+
+Only 200 rows may be returned in a single query. Use the `skip` and `limit` options to paginate through
+the results. 
+
+
+  * **Optional Parameters**
+
+    **skip**: number of results to skip
+  
+    **limit**: number of results to return (maximum is 200)
+
+  * **Examples**:
+
+    Paginate through candidate coordinates
+
+    ```
+    GET /v1/aca/meta/spacecraft?skip=200
+    GET /v1/aca/meta/spacecraft?skip=400
+    ... until `returned_num_rows` == 0
+    ```
+
 
 ### Token for raw data access
 ##### GET /v1/token/{username}/{email address}

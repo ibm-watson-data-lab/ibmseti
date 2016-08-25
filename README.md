@@ -34,7 +34,7 @@ ibmseti.callback.disable()
 
 ### Obtaining Data
 
-[Click here for documentation and examples for the Public IBM+SETI Data Server REST API](https://github.com/ibm-cds-labs/setigopublic/blob/master/README.md), 
+[Click here for documentation and examples for the Public IBM+SETI Data Server REST API](setigopublic.md), 
 which also briefly describes the SETI data. 
 [This IBM Spark notebook](https://console.ng.bluemix.net/data/notebooks/e17dc8c6-9c33-4947-be31-ee6b4b7e0888/view?access_token=6e95d320610f67467ba63bc89d9cec48faf847f2532fdd7523b0dd2ccb9ea346#) 
 gives an example use of the API and how to store the data in your Bluemix Account's Object Store instance.
