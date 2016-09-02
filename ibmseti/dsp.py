@@ -21,20 +21,26 @@ import numpy as np
 from . import __constants__
 
 def time_bins(header):
-  tb = np.arange(header['number_of_half_frames'], dtype=np.float64)*__constants__.bins_per_half_frame\
+  '''
+  Returns the time-axis lower bin edge values for the spectrogram.
+  '''
+  return np.arange(header['number_of_half_frames'], dtype=np.float64)*__constants__.bins_per_half_frame\
   *(1.0 - header['over_sampling']) / header['subband_spacing_hz']
-
-  return tb
 
 def frequency_bins(header):
   '''
-  Returnes the bin edges for the spectrogram. 
+  Returnes the frequency-axis lower bin edge values for the spectrogram. 
   '''
-  fb = np.fft.fftshift(\
+
+  center_frequency = 1.0e6*header['rf_center_frequency']
+  if header["number_of_subbands"] > 1:
+    center_frequency += header["subband_spacing_hz"]*(header["number_of_subbands"]/2.0 - 0.5)
+
+  return np.fft.fftshift(\
     np.fft.fftfreq( int(header["number_of_subbands"] * __constants__.bins_per_half_frame*(1.0 - header['over_sampling'])), \
-      1.0/(header["number_of_subbands"]*header["subband_spacing_hz"])) + 1.0e6*header['rf_center_frequency']
+      1.0/(header["number_of_subbands"]*header["subband_spacing_hz"])) + center_frequency
     )
-  return fb
+  
 
 
 def complex_to_power(cdata, over_sampling):  
@@ -92,7 +98,7 @@ def compamp_to_spectrogram(compamp):
       #set the aspect ratio for visualization
       ax.set_aspect(float(spectrogram.shape[1]) / spectrogram.shape[0])
 
-      #Time is on the horizontal axis and frequency bin is along the vertical.
+      #Time is on the horizontal axis and frequency is along the vertical.
   '''
 
   power = complex_to_power(compamp.complex_data(), compamp.header()['over_sampling'])

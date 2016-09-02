@@ -41,6 +41,10 @@ class Compamp(object):
     rf_center_frequency, half_frame_number, activity_id, subband_spacing_hz, start_subband_id, \
     number_of_subbands, over_sampling, polarization = struct.unpack('>diidiifi', data[:__constants__.header_offset])  
 
+    #rf_center_frequency is the center frequency of the first subband in the file. If this is a compamp file,
+    #there is only one subband. If this is an archive-compamp, there are typically 16 subbands.
+    #This information must be used to properly calculate the 
+
     #todo -- add ability for somebody to use N*__bins_per_half_frame bins instead. Will
     #need to allow for N to be passed into this function, or set in the Contsants object
     half_frame_bytes = number_of_subbands * __constants__.bins_per_half_frame + __constants__.header_offset  
