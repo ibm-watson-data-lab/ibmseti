@@ -89,14 +89,15 @@ def compamp_to_spectrogram(compamp):
       plt.ion()
 
       r = requests.get(aca_url)
- 
-      header, spectrogram = ibmseti.spectrograms.raw_to_spectrogram( r.content )
+
+      aca = ibmseti.compamp.Compamp(r.content)
+
+      spectrogram = ibmseti.dsp.compamp_to_spectrogram(aca)
+      time_bins = ibmseti.dsp.time_bins( aca.header() )
+      freq_bins = ibmseti.dsp.frequency_bins( aca.header() )
 
       fig, ax = plt.subplots()
-      ax.imshow(spectrogram)
-      
-      #set the aspect ratio for visualization
-      ax.set_aspect(float(spectrogram.shape[1]) / spectrogram.shape[0])
+      ax.pcolormesh(freq_bins, time_bins, spectrogram)
 
       #Time is on the horizontal axis and frequency is along the vertical.
   '''
