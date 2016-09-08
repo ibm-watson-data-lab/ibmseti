@@ -26,6 +26,14 @@ file, along with a temporary URL to download the `archive-compamp` file
 
 Further enhancements to this API will allow for finding data based on other attributes.
 
+### Data License
+
+This data is licensed by the SETI Institute of Mountain View, CA under the Create Commons BY 4.0 license.
+
+IBM has been granted non-exclusive permission by the SETI Institute to reproduce, 
+prepare derivative works, and distribute copies of data, which have been provided to IBM, 
+or will be provided in the future, by the SETI Institute under the Creative Commons BY 4.0 license.
+
 
 ## API Reference
 

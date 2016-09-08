@@ -39,6 +39,9 @@ which also briefly describes the SETI data.
 [This IBM Spark notebook](https://console.ng.bluemix.net/data/notebooks/e17dc8c6-9c33-4947-be31-ee6b4b7e0888/view?access_token=6e95d320610f67467ba63bc89d9cec48faf847f2532fdd7523b0dd2ccb9ea346#) 
 gives an example use of the API and how to store the data in your Bluemix Account's Object Store instance.
 
+> [The data license is found here.](setigopublic.md#data-license)
+
+
 ### Read the Data
 
 The raw data (`compamp` or `archive-compamp` files) are read with a `ibmseti.compamp.Compamp` object.
