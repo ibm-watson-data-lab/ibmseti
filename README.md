@@ -1,10 +1,12 @@
 #IBM SETI
 
-The `ibmseti` package is used to read and analyze SETI Institute data generated from the Allen Telescope Array.
-It provides the essential code needed to get started reading the data, calculating spectrograms and autocorrelation
+This README describes the `ibmseti` package. This software is used to read and analyze 
+SETI Institute data generated from the Allen Telescope Array. It provides the essential 
+code needed to get started reading the data, calculating spectrograms and autocorrelation
 spectra, and extracting some of the standard features from those results.
 
-This coode was produced in partnership between the SETI Institute of Mountain View, CA and IBM.
+This code was produced in partnership between the SETI Institute of Mountain View, CA and IBM.
+
 
 ## Privacy Warning
 
@@ -34,12 +36,8 @@ ibmseti.callback.disable()
 
 ### Obtaining Data
 
-[Click here for documentation and examples for the Public IBM+SETI Data Server REST API](setigopublic.md), 
+[Click here for documentation and examples for the Public IBM+SETI Data Server REST API](https://github.com/ibm-cds-labs/seti_at_ibm/blob/master/setigopublic.md), 
 which also briefly describes the SETI data. 
-[This IBM Spark notebook](https://console.ng.bluemix.net/data/notebooks/e17dc8c6-9c33-4947-be31-ee6b4b7e0888/view?access_token=6e95d320610f67467ba63bc89d9cec48faf847f2532fdd7523b0dd2ccb9ea346#) 
-gives an example use of the API and how to store the data in your Bluemix Account's Object Store instance.
-
-> [The data license is found here.](setigopublic.md#data-license)
 
 
 ### Read the Data
@@ -204,24 +202,6 @@ One can also calculate similar features (mean, N-th moments) based on the **grad
 the time or frequency axis. Use `ibmseti.features.first_order_gradient` 
 or `numpy.gradient` to calculate the gradients. Then just as above with the
 `first difference`, one can calculate the various moments and other features.
-
-
-
-
-## Next Steps
-
-More robust examples are found in the following shared IBM Spark notebooks. These examples show
-
-* [introduction to the REST API](https://console.ng.bluemix.net/data/notebooks/b05446cc-8303-4b1d-8150-2d55e49691ef/view?access_token=e70e82feeae786d3e57f2f918b4d22439723dd619e3059143942f0bdb4b9504c) 
-* [how to store data to your Bluemix Object Store](https://console.ng.bluemix.net/data/notebooks/6818fe79-84f5-4c22-a800-b80aa7696ef4/view?access_token=c1a0bf78689d45d01425a5b8a59c886da55a16eb17c4708791c14551c3c17b21)
-* [retrieve the data from Object Store and calculate a spectrogram](https://console.ng.bluemix.net/data/notebooks/d9e06caa-ab8b-41d8-b9f7-507cea13f085/view?access_token=48f90032025617b309558b9734946c5bdc9cda5fdb1596ddb23899b05b162786)
-* [retrieve the data from Object Store and calculate features](https://console.ng.bluemix.net/data/notebooks/f234dad3-4966-41d3-8f21-16649a87ba3f/view?access_token=dc4926ef99723f7068e5c48315fe7510fde4eb4ae7c00ed4f7521b012b5a5db5)
-
-all using [the IBM Spark Service](http://www.ibm.com/analytics/us/en/technology/spark/) 
-in [Bluemix](https://console.ng.bluemix.net/docs/services/AnalyticsforApacheSpark/index.html). 
-
-It's now up to you to create new features and find better algorithms to search this
-vast amount of radio-signal data for evidence of extraterrestrial intelligence.
 
 
 ### License 
