@@ -62,7 +62,7 @@ freq_bins = ibmseti.dsp.frequency_bins( aca.header() )
 import matplotlib.pyplot as plt
 plt.ion()
 fig, ax = plt.subplots()
-#ax.pcolormesh(freq_bins, time_bins, spectrogram)
+ax.pcolormesh(freq_bins, time_bins, spectrogram)
 ```
 
 ### Feature Extraction
