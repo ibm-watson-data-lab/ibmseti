@@ -162,23 +162,6 @@ h_p, h_max = ibmseti.features.entropy(p,w)
 h_normal = h_p / h_max  #h_normal should range between 0 and 1.
 ```
 
-Alternatively, it may be interesting to use the Baysian Block method supplied by AstroML
-to compute a histogram from the spectrogram. However, it is unclear how to interpret
-the `entropy` extracted from this as it seems to be close to zero for no signals and increasing
-for the presense of a signal (found in some limited internal testing). Additionally, the 
-number of bins automatically determined may itself be an interesting feature
-
-```
-import astroML.density_estimation 
-
-bin_edges = astroML.density_estimation.bayesian_blocks(spectrogram.flatten())
-p, _ = np.histogram(spectrogram.flatten(), bins=bin_edges, density=True)
-w = np.diff(bin_edges)
-
-h_p, h_max = ibmseti.features.entropy(p,w)
-```
-
-
 ##### Features based on the [First Difference](http://people.duke.edu/~rnau/411diff.htm)
 
 ###### Mean First Difference (along the time axis) of the spectrogram.
