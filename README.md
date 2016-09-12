@@ -5,8 +5,7 @@ SETI Institute data generated from the Allen Telescope Array. It provides the es
 code needed to get started reading the data, calculating spectrograms and autocorrelation
 spectra, and extracting some of the standard features from those results.
 
-This code was produced in partnership between the SETI Institute of Mountain View, CA and IBM.
-
+[Go here if you're looking to get started analyzing SETI data.](https://github.com/ibm-cds-labs/seti_at_ibm)
 
 ## Privacy Warning
 
@@ -33,21 +32,14 @@ ibmseti.callback.disable()
     pip install ibmseti
 
 
-
-### Obtaining Data
-
-[Click here for documentation and examples for the Public IBM+SETI Data Server REST API](https://github.com/ibm-cds-labs/seti_at_ibm/blob/master/setigopublic.md), 
-which also briefly describes the SETI data. 
-
-
 ### Read the Data
 
 The raw data (`compamp` or `archive-compamp` files) are read with a `ibmseti.compamp.Compamp` object.
 
 ```python
 import ibmseti
-rawdata = open('path/to/data/2014-08-11/act17713/2014-08-11_05-50-10_UTC.act17713.dx2009.id-2.R.archive-compamp','r').read()
-aca = ibmseti.compamp.Compamp(rawdata)
+rawdatafile = open('path/to/data/2014-08-11/act17713/2014-08-11_05-50-10_UTC.act17713.dx2009.id-2.R.archive-compamp','r')
+aca = ibmseti.compamp.Compamp(rawdatafile.read())
 ```
 
 ### Create Spectrogram and Plot
