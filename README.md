@@ -195,6 +195,16 @@ the time or frequency axis. Use `ibmseti.features.first_order_gradient`
 or `numpy.gradient` to calculate the gradients. Then just as above with the
 `first difference`, one can calculate the various moments and other features.
 
+##### Asymmetry
+
+It may be useful to examine the asymmetry of the signal measured in the L and R polarization components. 
+The asymmetry is defined as
+
+  A = (spect_L - spect_R) / (spect_L + spect_R)
+
+where `spect_L` and `spect_R` are the 2D spectrograms for the L and R polarizations.  The returned 
+`A` can be further analyzed. The total integration of `A` could be a useful feature as we would expect
+E.T. signals not to be completely polarized in either the L or R polarizations (A = +/- 1).  
 
 ### License 
 

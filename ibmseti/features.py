@@ -316,3 +316,20 @@ def entropy(p, w):
 
   return h_p, h_max
 
+def asymmetry(spectogram_L, spectrogram_R):
+  '''
+  returns (spectogram_L - spectrogram_R) / (spectogram_L + spectrogram_R)
+
+  The asymmetry measure should be used for both polarizations recorded for a particular observation.
+
+  On can then perform analysis such as integrating the returned spectrogram to determine if the 
+  asymmetry of the signals are close to zero, indicating equal signal in both polarizations, or
+  close to +-1, indicating a strong asymmetry in the L or R polarization.
+
+  spectrogram_L and spectrogram_R should be Numpy arrays.
+  '''
+  return (spectrogram_L - spectrogram_R) / (spectrogram_L + spectrogram_R)
+
+
+
+
