@@ -69,7 +69,8 @@ make no guarantees about their usefulness. But we add them in the code here to g
 Also, the spectrograms are relatively large. One may consider reducing the size of the spectrogram
 using https://gist.github.com/derricw/95eab740e1b08b78c03f. Calculations done with a 
 spectogram of reduced size can be significantly faster. For example, one can reduce the
-size from 129x6144 to 43x192: `spectrogram = bin_ndarray(spectrogram, (43,192), operation='sum')`) 
+size from 129x6144 to 43x192: `spectrogram = bin_ndarray(spectrogram, (43,192), operation='sum')`). If you sliced
+off one of the time-bins to make the spectrogram 128x6144, you could reduce the spectrogram by other factors.
 
 ##### Features based on the Spectrogram
 
