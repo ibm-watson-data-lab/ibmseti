@@ -7,23 +7,6 @@ spectra, and extracting some of the standard features from those results.
 
 [Go here if you're looking to get started analyzing SETI data.](https://github.com/ibm-cds-labs/seti_at_ibm)
 
-## Privacy Warning
-
-We send usage information of this library when you import the package in your code and make particular calls.
-In particular, we collect the following environment variables:
-
-  * USER
-  * SPARK_MASTER_IP
-  * SPARK_TENANT_ID
-
-In the IBM Spark Service environment these envars contains unique identifiers for your Spark Service. 
-
-If you wish to turn this off, you may do so by
-
-```python
-ibmseti.callback.disable()
-```
-
 
 ## Example User Code
 
