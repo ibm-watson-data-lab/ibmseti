@@ -107,6 +107,8 @@ class Compamp(object):
     where K = constants.bins_per_half_frame, N is typically 129 and M is typically 1 for
     compamp files and 16 for archive-compamp files. 
 
+    Note that this returns a Numpy array of type complex64. This data is not retained within Compamp objects.
+
     '''
     #note that since we can only pack into int8 types, we must pad each 4-bit value with 4, 0 bits
     #this effectively multiplies each 4-bit value by 16 when that value is represented as an 8-bit signed integer.
@@ -116,7 +118,7 @@ class Compamp(object):
     real_val = np.bitwise_and(packed_data, 0xf0).astype(np.int8)  # coef's are: RRRRIIII (4 bits real,
     imag_val = np.left_shift(np.bitwise_and(packed_data, 0x0f), 4).astype(np.int8)  # 4 bits imaginary in 2's complement)
 
-    cdata = np.empty(len(real_val), complex)
+    cdata = np.empty(len(real_val), np.complex64)
 
     #"Normalize" by making appropriate bit-shift. Otherwise, values for real and imaginary coefficients are
     #inflated by 16x. 
