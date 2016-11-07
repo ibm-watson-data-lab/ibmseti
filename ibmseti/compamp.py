@@ -35,9 +35,9 @@ class Compamp(object):
     It also does not cache the unpacked data in order to reduce the memory footprint.
     '''
     self.data = data
-    self.__header__ = None
+    self._header = None
 
-  def __read_half_frame_header__(self, data):
+  def _read_half_frame_header(self, data):
     rf_center_frequency, half_frame_number, activity_id, subband_spacing_hz, start_subband_id, \
     number_of_subbands, over_sampling, polarization = struct.unpack('>diidiifi', data[:__constants__.header_offset])  
 
@@ -66,10 +66,10 @@ class Compamp(object):
     This returns the first header in the data file
 
     '''
-    if self.__header__ is None:
-      self.__header__ = self.__read_half_frame_header__(self.data)
+    if self._header is None:
+      self._header = self._read_half_frame_header(self.data)
 
-    return self.__header__
+    return self._header
 
   def headers(self):
     '''
@@ -81,9 +81,9 @@ class Compamp(object):
     single_compamp_data = np.frombuffer(self.data, dtype=np.int8)\
         .reshape((first_header['number_of_half_frames'], first_header['half_frame_bytes']))
 
-    return [self.__read_half_frame_header__(row) for row in single_compamp_data]
+    return [self._read_half_frame_header(row) for row in single_compamp_data]
     
-  def __packed_data__(self):
+  def _packed_data(self):
     '''
     Returns the bit-packed data extracted from the data file. This is not so useful to analyze.
     Use the complex_data method instead.
@@ -110,7 +110,7 @@ class Compamp(object):
     '''
     #note that since we can only pack into int8 types, we must pad each 4-bit value with 4, 0 bits
     #this effectively multiplies each 4-bit value by 16 when that value is represented as an 8-bit signed integer.
-    packed_data = self.__packed_data__()
+    packed_data = self._packed_data()
     header = self.header()
 
     real_val = np.bitwise_and(packed_data, 0xf0).astype(np.int8)  # coef's are: RRRRIIII (4 bits real,
