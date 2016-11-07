@@ -18,13 +18,13 @@
 
 import numpy as np
 
-from . import __constants__
+from . import constants
 
 def time_bins(header):
   '''
   Returns the time-axis lower bin edge values for the spectrogram.
   '''
-  return np.arange(header['number_of_half_frames'], dtype=np.float64)*__constants__.bins_per_half_frame\
+  return np.arange(header['number_of_half_frames'], dtype=np.float64)*constants.bins_per_half_frame\
   *(1.0 - header['over_sampling']) / header['subband_spacing_hz']
 
 def frequency_bins(header):
@@ -37,7 +37,7 @@ def frequency_bins(header):
     center_frequency += header["subband_spacing_hz"]*(header["number_of_subbands"]/2.0 - 0.5)
 
   return np.fft.fftshift(\
-    np.fft.fftfreq( int(header["number_of_subbands"] * __constants__.bins_per_half_frame*(1.0 - header['over_sampling'])), \
+    np.fft.fftfreq( int(header["number_of_subbands"] * constants.bins_per_half_frame*(1.0 - header['over_sampling'])), \
       1.0/(header["number_of_subbands"]*header["subband_spacing_hz"])) + center_frequency
     )
   

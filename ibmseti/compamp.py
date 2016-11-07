@@ -15,7 +15,7 @@
 import numpy as np
 import struct
 
-from . import __constants__
+from . import constants
 
 
 class Compamp(object):
@@ -39,7 +39,7 @@ class Compamp(object):
 
   def _read_half_frame_header(self, data):
     rf_center_frequency, half_frame_number, activity_id, subband_spacing_hz, start_subband_id, \
-    number_of_subbands, over_sampling, polarization = struct.unpack('>diidiifi', data[:__constants__.header_offset])  
+    number_of_subbands, over_sampling, polarization = struct.unpack('>diidiifi', data[:constants.header_offset])  
 
     #rf_center_frequency is the center frequency of the first subband in the file. If this is a compamp file,
     #there is only one subband. If this is an archive-compamp, there are typically 16 subbands.
@@ -47,7 +47,7 @@ class Compamp(object):
 
     #todo -- add ability for somebody to use N*__bins_per_half_frame bins instead. Will
     #need to allow for N to be passed into this function, or set in the Contsants object
-    half_frame_bytes = number_of_subbands * __constants__.bins_per_half_frame + __constants__.header_offset  
+    half_frame_bytes = number_of_subbands * constants.bins_per_half_frame + constants.header_offset  
     number_of_half_frames = len(data) / half_frame_bytes
 
     return {'rf_center_frequency':rf_center_frequency, 
@@ -92,8 +92,8 @@ class Compamp(object):
 
     packed_data = np.frombuffer(self.data, dtype=np.int8)\
         .reshape((header['number_of_half_frames'], header['half_frame_bytes']))  # create array of half frames
-    packed_data = packed_data[::-1, __constants__.header_offset:]  # slice out header and flip half frame order to reverse time ordering
-    packed_data = packed_data.reshape((header['number_of_half_frames']*(header['half_frame_bytes']- __constants__.header_offset))) # compact into vector
+    packed_data = packed_data[::-1, constants.header_offset:]  # slice out header and flip half frame order to reverse time ordering
+    packed_data = packed_data.reshape((header['number_of_half_frames']*(header['half_frame_bytes']- constants.header_offset))) # compact into vector
 
     return packed_data
 
@@ -104,7 +104,7 @@ class Compamp(object):
     used to create a 3D numpy array of dtype=complex, which is returned. 
 
     The shape of the numpy array is N half frames, M subbands, K data points per half frame,
-    where K = __constants__.bins_per_half_frame, N is typically 129 and M is typically 1 for
+    where K = constants.bins_per_half_frame, N is typically 129 and M is typically 1 for
     compamp files and 16 for archive-compamp files. 
 
     '''
@@ -124,7 +124,7 @@ class Compamp(object):
     cdata.imag = np.right_shift(imag_val, 4)
 
     # expose compamp measurement blocks
-    cdata = cdata.reshape((header['number_of_half_frames'], header['number_of_subbands'], __constants__.bins_per_half_frame))
+    cdata = cdata.reshape((header['number_of_half_frames'], header['number_of_subbands'], constants.bins_per_half_frame))
 
     return cdata
 
