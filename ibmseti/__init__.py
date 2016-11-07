@@ -19,5 +19,6 @@ import signaldb
 import dsp
 import compamp
 import features
+import constants
 
 from __info__ import __version__
