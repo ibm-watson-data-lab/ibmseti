@@ -46,9 +46,22 @@ def frequency_bins(header):
 def complex_to_power(cdata, over_sampling):  
   '''
   cdata: 3D complex data (shaped by subbands and half_frames, as returned from Compamp.complex_data())
-  over_sampling: The fraction of oversampling across subbands (typically 0.25)
+  over_sampling: The fraction of oversampling across subbands (typically 0.25). 
 
-  returns a spectrogram
+  returns a 3D spectrogram
+
+  Example:
+      aca = ibmseti.compamp.Compamp(raw_data)
+      cdata = aca.complex_data()
+      #can perform any transformations on cdata here, such as applying hanning windows for smoother FFT results.
+      #cdata = np.multiply(cdata, np.hanning(constants.bins_per_half_frame))
+      power = ibmseti.dsp.complex_to_power(, aca.header()['over_sampling'])
+
+  Typically, this 3D spectrogram is rehaped so that the subbands are aligned next to each other
+  in a 2D spectrogram
+
+      spectrogram = ibmseti.dsp.reshape_to_2d(power)
+
   '''
   
   # FFT all blocks separately and rearrange output
@@ -78,19 +91,19 @@ def reshape_to_2d(arr):
 
 def compamp_to_spectrogram(compamp):
   '''
-  Extract both of these from the to_header_and_packed_data function.
-
   Returns spectrogram, with each row containing the measured power spectrum for a XX second time sample.
 
-  Example: 
-      import requests
+  Using this function is shorthand for:
+      aca = ibmseti.compamp.Compamp(raw_data)
+      power = ibmseti.dsp.complex_to_power(aca.complex_data(), aca.header()['over_sampling'])
+      spectrogram = ibmseti.dsp.reshape_to_2d(power)
+
+  Example Usage: 
       import ibmseti
       import matplotlib.pyplot as plt
       plt.ion()
-
-      r = requests.get(aca_url)
-
-      aca = ibmseti.compamp.Compamp(r.content)
+  
+      aca = ibmseti.compamp.Compamp(raw_data)
 
       spectrogram = ibmseti.dsp.compamp_to_spectrogram(aca)
       time_bins = ibmseti.dsp.time_bins( aca.header() )
@@ -100,6 +113,7 @@ def compamp_to_spectrogram(compamp):
       ax.pcolormesh(freq_bins, time_bins, spectrogram)
 
       #Time is on the horizontal axis and frequency is along the vertical.
+
   '''
 
   power = complex_to_power(compamp.complex_data(), compamp.header()['over_sampling'])
