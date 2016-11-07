@@ -1,10 +1,14 @@
-0.0.7 (2015-11-07)
+0.0.8 (Unreleased)
+==================
+
+
+0.0.7 (2016-11-07)
 ==================
 
 - [UPDATE] Compamp.complex_data returns a Numpy array of type complex64, reducing memory usage
 - [NEW] Automatically imports ibmseti.constants (bins_per_half_frame is needed for DIY data manipulation)
 
- 0.0.6 (2016-10-19)
+0.0.6 (2016-10-19)
 ==================
 
 - [NEW] Removes callback to track usage.
