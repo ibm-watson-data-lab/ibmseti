@@ -1,6 +1,7 @@
-0.0.8 (Unreleased)
+0.0.8 (2016-11-07)
 ==================
 
+- [NEW] Breaks out methods to compute signal in fourier space and to create a single 1D time-domain signal with over-sampled frequencies removed.
 
 0.0.7 (2016-11-07)
 ==================
