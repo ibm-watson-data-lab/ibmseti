@@ -61,6 +61,37 @@ def complex_to_fourier(cdata, over_sampling, norm=None):
     
   return fftcdata
 
+def fourier_to_time(fcdata, norm=None):
+  '''
+  Converts the data from 2D fourier space signal to a 1D time-series
+
+  fcdata: Complex fourier spectrum as a 2D array, The axis=0 is for each "half frame", and axis=1 contains the
+  fourier-space data for that half frame. Furthermore, it's assumed that fftshift has placed the central frequency 
+  at the center axis=1.
+
+  norm: None or "ortho" -- see Numpy FFT Normalization documentation
+
+  Usage:
+
+    aca = ibmseti.compamp.Compamp(raw_data)
+    cdata = aca.complex_data()
+    #can manipulate cdata in time-space if desired (use various windowing functions, for example)
+    fcdata = ibmseti.dsp.complex_to_fourier(cdata, aca.header()['over_sampling'])
+    fcdata_2d = ibmseti.dsp.reshape_to_2d(fcdata)
+    cdata_1d = ibmseti.dsp.fourier_to_time(fcdata_2d)
+
+
+  Sanity Check:
+
+    arr2 = cdata_1d.reshape(aca.header()['number_of_half_frames'], int(aca.header()['number_of_subbands'] * ibmseti.constants.bins_per_half_frame*(1 - aca.header()['over_sampling'])))
+    arr2 = np.fft.fftshift(np.fft.fft(arr2), 1)
+
+    sanity = np.sum(np.sum(fcdata_2d - arr2))
+    print sanity  # should equal to approx. 0
+  '''
+
+  return np.fft.ifft(np.fft.ifftshift(fcdata, 1),norm=norm).reshape(fcdata.shape[0] * fcdata.shape[1])  # single complex time series
+
 
 def complex_to_power(cdata, over_sampling):  
   '''
