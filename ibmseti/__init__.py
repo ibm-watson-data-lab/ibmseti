@@ -15,7 +15,6 @@
 A set of tools developed for SETI analysis of ATA data in partnership with IBM.
 """
 
-import signaldb
 import dsp
 import compamp
 import features
