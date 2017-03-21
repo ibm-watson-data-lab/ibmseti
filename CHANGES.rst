@@ -1,5 +1,6 @@
-0.0.9 (Unreleased)
+1.0.0 (2017-03-21)
 ==================
+- [NEW] Removes signaldb module, which wasn't so useful. Also makes the package independent of pyspark. 
 
 0.0.8 (2016-11-07)
 ==================
