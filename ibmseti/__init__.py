@@ -19,5 +19,6 @@ import dsp
 import compamp
 import features
 import constants
+import simcompamp
 
 from __info__ import __version__
