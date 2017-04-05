@@ -1,3 +1,6 @@
+1.0.2 (unreleased)
+==================
+
 1.0.1
 ==================
 - [NEW] Supports reading simulated data files prepared for the SETI Institute hackathon and code challenge, 2017.
