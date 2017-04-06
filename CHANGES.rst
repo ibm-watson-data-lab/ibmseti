@@ -1,5 +1,6 @@
 1.0.2 (unreleased)
 ==================
+- [UPDATE] Moves SimCompamp class into compamp module instead of having separate file. :p
 
 1.0.1
 ==================
