@@ -27,8 +27,7 @@ aca = ibmseti.compamp.Compamp(rawdatafile.read())
 
 #### Simulated data
 
-This package can now read data that was simulated for the [SETI Institute hackathon 
-and code challenge (June/July 2017)](https://www.eventbrite.com/e/seti-institute-hackathon-machine-learning-for-the-search-for-extraterrestrial-intelligence-tickets-32830428696)
+This package can now read data that was simulated for the [SETI Institute hackathon](https://www.eventbrite.com/e/seti-institute-hackathon-machine-learning-for-the-search-for-extraterrestrial-intelligence-tickets-32830428696) and [code challenge (June/July 2017)](https://www.eventbrite.com/e/seti-institute-code-challenge-machine-learning-for-the-search-for-extraterrestrial-intelligence-registration-32831985352)
 
 ```python
 import ibmseti
