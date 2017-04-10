@@ -54,12 +54,12 @@ ax.pcolormesh(freq_bins, time_bins, spectrogram)
 
 #### Spectrom from Simulated Data
 
-Due to the difference of the structure of the bytes packed in the simulated data compared to 
+Due to the difference in the structure of the bytes packed in the simulated data compared to 
 the real data (the simulated data are much simpler), a different code was written to create a spectrogram.
-Also, the are no need for the time and frequency bin edges for the plots. The simulated signals could
+Also, there is no need for the time and frequency bin edges for the plots. The simulated signals could
 be at any central frequency, and digitized at any sampling rate. However, the shape of the spectrogram 
-produced in the code below transforms the data into a standard spectrogram/waterfall that is used for
-the real archive-compamp files. 
+produced in the code below transforms the data into the "standard" spectrogram/waterfall typically used
+to analyze the real archive-compamp files. 
 
 ```python
 rawdatafile = open('path/to/data/<some random string>.dat','r')
