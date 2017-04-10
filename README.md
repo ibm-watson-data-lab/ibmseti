@@ -1,4 +1,4 @@
-#IBM SETI
+# IBMSETI
 
 This README describes the `ibmseti` package. This software is used to read and analyze 
 SETI Institute data generated from the Allen Telescope Array. It provides the essential 
@@ -25,6 +25,18 @@ rawdatafile = open('path/to/data/2014-08-11/act17713/2014-08-11_05-50-10_UTC.act
 aca = ibmseti.compamp.Compamp(rawdatafile.read())
 ```
 
+#### Simulated data
+
+This package can now read data that was simulated for the [SETI Institute hackathon 
+and code challenge (June/July 2017)](https://www.eventbrite.com/e/seti-institute-hackathon-machine-learning-for-the-search-for-extraterrestrial-intelligence-tickets-32830428696)
+
+```python
+import ibmseti
+rawdatafile = open('path/to/data/<some random string>.dat','r')
+aca = ibmseti.compamp.SimCompamp(rawdatafile.read())
+```
+
+
 ### Create Spectrogram and Plot
 
 Here, we show the code to produce a Spectrogram plot from a Compamp object with the `ibmseti.dsp` module.
@@ -39,6 +51,27 @@ plt.ion()
 fig, ax = plt.subplots()
 ax.pcolormesh(freq_bins, time_bins, spectrogram)
 ```
+
+#### Spectrom from Simulated Data
+
+Due to the difference of the structure of the bytes packed in the simulated data compared to 
+the real data (the simulated data are much simpler), a different code was written to create a spectrogram.
+Also, the are no need for the time and frequency bin edges for the plots. The simulated signals could
+be at any central frequency, and digitized at any sampling rate. However, the shape of the spectrogram 
+produced in the code below transforms the data into a standard spectrogram/waterfall that is used for
+the real archive-compamp files. 
+
+```python
+rawdatafile = open('path/to/data/<some random string>.dat','r')
+aca = ibmseti.compamp.SimCompamp(rawdatafile.read())
+spectrogram = aca.get_spectrogram()
+
+import matplotlib.pyplot as plt
+plt.ion()
+fig, ax = plt.subplots()
+ax.imshow(np.log(spectrogram), aspect = 0.5*float(spectrogram.shape[1]) / spectrogram.shape[0])
+```
+
 
 ### Feature Extraction
 
