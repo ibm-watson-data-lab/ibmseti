@@ -1,6 +1,6 @@
 1.0.3 (unreleased)
 ==================
-
+- [UPDATE] Changes default size of SimCompamp to 32 x 6144.
 
 1.0.2 
 ==================
