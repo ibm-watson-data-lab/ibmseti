@@ -140,7 +140,7 @@ class SimCompamp(object):
   Also has functions to compute the DFT and spectrograms.
   '''
 
-  def __init__(self, data):
+  def __init__(self, data, shape=(32,6144)):
     '''
     data is the raw data read from a simulated SETI compamp or archive-compamp file. It should be a string.
 
@@ -169,6 +169,8 @@ class SimCompamp(object):
     
     header, self.data = data.split('\n',1)
     self._header = json.loads(header)
+    self._shape = shape
+
 
   def header(self):
     '''
@@ -185,17 +187,17 @@ class SimCompamp(object):
     '''
     return np.frombuffer(self.data, dtype='i1').astype(np.float32).view(np.complex64)
 
-  def _reshape(self, complex_data, shape=(129,6144)):
+  def _reshape(self, complex_data):
     '''
-    Reshapes the input complex_data in a 2D array of size, shape. Standard is 129x6144. 
-    This is the same size as standard SETI archive-compamp files. 
+    Reshapes the input complex_data in a 2D array of size, shape. Standard is 32 x 6144 for simulation files. 
+    This is not the same size as standard SETI archive-compamp files, which are typically 129 x 6144.
 
     However, you can play around with shape size as much as you want.
 
     Tip: If you slice out the first (or last) 6144 samples of the data, you can produce many more
     2D shapes (128 x 6144... 64 x 12288, 32 x 24567) than you can normally. 
     '''
-    return complex_data.reshape(*shape)
+    return complex_data.reshape(*self._shape)
 
   def _spec_fft(self, complex_data):
     '''
