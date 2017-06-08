@@ -1,6 +1,7 @@
-1.0.4 (unreleased)
+1.0.4 
 ==================
 
+- [UPDATE] Automatically subtract any DC offset in Simulation data (compamp.SimCompamp)
 
 1.0.3
 ==================
