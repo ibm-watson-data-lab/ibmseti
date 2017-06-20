@@ -1,6 +1,6 @@
 1.0.5 (unreleased)
 ==================
-
+- [NEW] Adding ibmseti.compamp.SimCompamp.sigProc function for inserting signal processing function before spectrogram calculations.
 
 1.0.4 
 ==================

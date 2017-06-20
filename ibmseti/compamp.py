@@ -140,7 +140,7 @@ class SimCompamp(object):
   Also has functions to compute the DFT and spectrograms.
   '''
 
-  def __init__(self, data, shape=(32,6144)):
+  def __init__(self, data, shape=(int(32*12),int(6144/12))):
     '''
     data is the raw data read from a simulated SETI compamp or archive-compamp file. It should be a string.
 
@@ -153,24 +153,40 @@ class SimCompamp(object):
     Note to SETI/IBM researchers: This class is for the public simulated files, as it assumes
     just a one line header. 
 
+    NEW: Default shape is 384 x 512 (previously was 32 x 6144)
     Standard usage:
 
+      raw_data = open('data_file.dat', r).read()
+      #or
+      r = requests.get('https://url/to/data_file.dat')
+      raw_data = r.content
     
-    raw_data = open('data_file.dat', r).read()
-    #or
-    r = requests.get('https://url/to/data_file.dat')
-    raw_data = r.content
-    
-    import ibmseti
-    aca = ibmseti.SimCompamp(raw_data)
-    spectrogram = aca.get_spectrogram()
+      import ibmseti
+      aca = ibmseti.SimCompamp(raw_data)
+      spectrogram = aca.get_spectrogram()
+
+    The shape can be changed with
+
+      aca.shape = (32,6144)
     
     '''
     
     header, self.data = data.split('\n',1)
-    self._header = json.loads(header)
-    self._shape = shape
+    private_header = None
 
+    header = json.loads(header)
+
+    if header.get('simulator_software_version',0) > 0:
+        #this is the private header and we need to remove one more line
+        #to get the public header
+        private_header = header
+        header, self.data = self.data.split('\n',1)
+
+    self._header = header
+    self.shape = shape
+    self._private_header = private_header
+
+    self.sigProc(None)
 
   def header(self):
     '''
@@ -180,11 +196,48 @@ class SimCompamp(object):
     '''
     return self._header
 
+  def private_header(self):
+    '''
+    Returns the private header
+
+    '''
+    return self._private_header
+
+  def sigProc(self, function=None):
+    '''
+    Set a function to peform signal processing before converting the time-series data into 
+    a spectrogram.
+
+    Your function should expect a single input, a 2D complex-valued time-series numpy array. It will
+    have the shape you set with the self.shape attribute. Your function should return a
+    2D numpy array. Note: the returned array can be any shape and size.
+
+    If the function is None, there will be no effect on the time-series data. 
+
+    For example: 
+
+      import numpy as np
+      aca = ibmseti.compamp.SimCompamp(data)
+
+      def mySigProc(compdata):
+        return compdata * np.hanning(compdata.shape[1])
+
+      aca.sigProc(mySigProc)
+
+      #the hanning window will be applied to the 2D complex time-series data
+      spectrogram = aca.get_spectrogram()
+
+    '''
+    self._sigProc = function if function else lambda x : x
+
+  
   def complex_data(self):
     '''
     This unpacks the data into a time-series data, of complex values.
 
     Also, any DC offset from the time-series is removed.
+
+    This is a 1D complex-valued numpy array.
     '''
     cp = np.frombuffer(self.data, dtype='i1').astype(np.float32).view(np.complex64)
     cp = cp - cp.mean()
@@ -192,15 +245,15 @@ class SimCompamp(object):
 
   def _reshape(self, complex_data):
     '''
-    Reshapes the input complex_data in a 2D array of size, shape. Standard is 32 x 6144 for simulation files. 
-    This is not the same size as standard SETI archive-compamp files, which are typically 129 x 6144.
+    Reshapes the input complex_data in a 2D array of size, shape. Standard is 384 x 512 for simulation files. 
+    This is not the same size as standard SETI archive-compamp files, which are typically 129 x 6144. One can 
+    also shape the data as 32 x 6144 in order to create spectrogram in a shape that is more similar to the 
+    typical shape of spectrogram. Reshaping changes the time-resolution and frequency-resolution of the resulting
+    spectrogram. The optimal shape for signal class recognition may vary for each class.
 
     However, you can play around with shape size as much as you want.
-
-    Tip: If you slice out the first (or last) 6144 samples of the data, you can produce many more
-    2D shapes (128 x 6144... 64 x 12288, 32 x 24567) than you can normally. 
     '''
-    return complex_data.reshape(*self._shape)
+    return complex_data.reshape(*self.shape)
 
   def _spec_fft(self, complex_data):
     '''
@@ -223,6 +276,10 @@ class SimCompamp(object):
 
   def get_spectrogram(self):
     '''
-    Transforms the input simulated data and computes a standard-sized spectrogram
+    Transforms the input simulated data and computes a standard-sized spectrogram.
+
+    If self.sigProc function is not None, the 2D complex-valued time-series data will 
+    be processed with that function before the FFT and spectrogram are calculated. 
     '''
-    return self._spec_power(self._spec_fft(self._reshape(self.complex_data())))
+
+    return self._spec_power(self._spec_fft(  self._sigProc( self._reshape( self.complex_data() )) ))
