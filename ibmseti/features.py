@@ -316,7 +316,7 @@ def entropy(p, w):
 
   return h_p, h_max
 
-def asymmetry(spectogram_L, spectrogram_R):
+def asymmetry(spectrogram_L, spectrogram_R):
   '''
   returns (spectogram_L - spectrogram_R) / (spectogram_L + spectrogram_R)
 
