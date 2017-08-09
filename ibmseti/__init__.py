@@ -15,9 +15,9 @@
 A set of tools developed for SETI analysis of ATA data in partnership with IBM.
 """
 
-import dsp
-import compamp
-import features
-import constants
+from . import dsp
+from . import compamp
+from . import features
+from . import constants
 
-from __info__ import __version__
+from .__info__ import __version__

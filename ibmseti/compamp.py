@@ -171,7 +171,7 @@ class SimCompamp(object):
     
     '''
     
-    header, self.data = data.split('\n',1)
+    header, self.data = data.split(b'\n',1)
     private_header = None
 
     header = json.loads(header)
@@ -180,7 +180,7 @@ class SimCompamp(object):
         #this is the private header and we need to remove one more line
         #to get the public header
         private_header = header
-        header, self.data = self.data.split('\n',1)
+        header, self.data = self.data.split(b'\n',1)
 
     self._header = header
     self.shape = shape
