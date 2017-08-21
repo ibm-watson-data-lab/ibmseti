@@ -27,7 +27,12 @@ class Compamp(object):
 
   def __init__(self, data):
     '''
-    data is the raw data read from a SETI compamp or archive-compamp file as a string type.
+    data is the raw data read from a SETI compamp or archive-compamp file.
+
+    Usually this is done like
+
+      aca = ibmseti.compamp.Compamp(open('path/to/file.archive-compamp','rb').read())
+
 
     This object does not automatically read and unpack the data upon instantiation. Instead, it does
     so only when called upon. This allows the object to be instantiated on a Spark driver, 
@@ -49,7 +54,7 @@ class Compamp(object):
     #todo -- add ability for somebody to use N*__bins_per_half_frame bins instead. Will
     #need to allow for N to be passed into this function, or set in the Contsants object
     half_frame_bytes = number_of_subbands * constants.bins_per_half_frame + constants.header_offset  
-    number_of_half_frames = len(data) / half_frame_bytes
+    number_of_half_frames = int(len(data) / half_frame_bytes)
 
     return {'rf_center_frequency':rf_center_frequency, 
             'half_frame_number':half_frame_number, 
@@ -142,7 +147,11 @@ class SimCompamp(object):
 
   def __init__(self, data, shape=(int(32*12),int(6144/12))):
     '''
-    data is the raw data read from a simulated SETI compamp or archive-compamp file. It should be a string.
+    data is the raw data read from a simulated SETI compamp or archive-compamp file. 
+
+    Usually this is done like
+
+      aca = ibmseti.compamp.SimCompamp(open('path/to/file.archive-compamp','rb').read())
 
     This object does not automatically read and unpack the data upon instantiation. Instead, it does
     so only when called upon. This allows the object to be instantiated on a Spark driver, 
