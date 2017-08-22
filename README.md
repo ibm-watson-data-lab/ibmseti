@@ -21,7 +21,7 @@ The raw data (`compamp` or `archive-compamp` files) are read with a `ibmseti.com
 
 ```python
 import ibmseti
-rawdatafile = open('path/to/data/2014-08-11/act17713/2014-08-11_05-50-10_UTC.act17713.dx2009.id-2.R.archive-compamp','r')
+rawdatafile = open('path/to/data/2014-08-11/act17713/2014-08-11_05-50-10_UTC.act17713.dx2009.id-2.R.archive-compamp','rb')
 aca = ibmseti.compamp.Compamp(rawdatafile.read())
 ```
 
@@ -31,7 +31,7 @@ This package can now read data that was simulated for the [SETI Institute hackat
 
 ```python
 import ibmseti
-rawdatafile = open('path/to/data/<some random string>.dat','r')
+rawdatafile = open('path/to/data/<some random string>.dat','rb')
 aca = ibmseti.compamp.SimCompamp(rawdatafile.read())
 ```
 
@@ -61,7 +61,7 @@ produced in the code below transforms the data into the "standard" spectrogram/w
 to analyze the real archive-compamp files. 
 
 ```python
-rawdatafile = open('path/to/data/<some random string>.dat','r')
+rawdatafile = open('path/to/data/<uuid>.dat','rb')
 aca = ibmseti.compamp.SimCompamp(rawdatafile.read())
 spectrogram = aca.get_spectrogram()
 
