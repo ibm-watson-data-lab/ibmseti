@@ -317,7 +317,7 @@ def entropy(p, w):
   if w is None:
     w = np.ones(len(p))
 
-  h_p = np.sum(map(lambda x: -x[0]*math.log(x[0]/x[1]) if x[0] else 0, zip(p, w)))
+  h_p = np.sum([-x[0]*math.log(x[0]/x[1]) if x[0] else 0 for x in zip(p, w)])
   h_max = math.log(np.sum(w))
 
   return h_p, h_max
