@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2016 IBM. All rights reserved.
+# Copyright (c) 2017 IBM. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,17 +35,19 @@ setup_args = {
     'version': __version__,
     'author': 'gadamc',
     'author_email': 'adamcox@us.ibm.com',
-    'url': 'https://github.com/ibm-cds-labs/ibmseti',
+    'url': 'https://github.com/ibm-watson-data-lab/ibmseti',
     'packages': ['ibmseti'],
     'classifiers': [
           'Intended Audience :: Developers',
           'Natural Language :: English',
           'License :: OSI Approved :: Apache Software License',
           'Topic :: Software Development :: Libraries',
-          'Development Status :: 5 - Production/Stable',
+          'Development Status :: 2 - Pre-Alpha',
           'Programming Language :: Python',
           'Programming Language :: Python :: 2',
-          'Programming Language :: Python :: 2.7'
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.6'
       ]
 }
 

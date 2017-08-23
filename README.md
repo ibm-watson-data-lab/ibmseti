@@ -224,7 +224,7 @@ E.T. signals not to be completely polarized in either the L or R polarizations (
 
 ### License 
 
-Copyright 2016 IBM Cloud Data Services
+Copyright 2017 IBM Cloud Data Services
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
