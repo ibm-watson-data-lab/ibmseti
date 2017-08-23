@@ -1,6 +1,7 @@
-1.0.5  (unreleased)
+2.0.0.dev1 (2017-08-23)
 ==================
 
+- [NEW] Support for Python 3. Tested to work with Python 2.7 and Python 3.6. 
 
 1.0.5  (2017-06-21)
 ==================
