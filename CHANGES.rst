@@ -1,3 +1,9 @@
+2.0.0.dev5 (2017-08-24)
+==================
+
+- [NEW] Support for Python 3. Tested to work with Python 2.7 and Python 3.5.
+- [NEW] Uses six package to handle data input SimCompamp 
+
 2.0.0.dev1 (2017-08-23)
 ==================
 
