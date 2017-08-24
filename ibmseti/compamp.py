@@ -15,6 +15,7 @@
 import numpy as np
 import json
 import struct
+import six
 
 from . import constants
 
@@ -159,10 +160,6 @@ class SimCompamp(object):
 
     It also does not cache the unpacked data in order to reduce the memory footprint.
 
-    Note to SETI/IBM researchers: This class is for the public simulated files, as it assumes
-    just a one line header. 
-
-    NEW: Default shape is 384 x 512 (previously was 32 x 6144)
     Standard usage:
 
       raw_data = open('data_file.dat', r).read()
@@ -183,6 +180,9 @@ class SimCompamp(object):
     header, self.data = data.split(b'\n',1)
     private_header = None
 
+    if six.PY3:
+        header = header.decode('utf-8')
+
     header = json.loads(header)
 
     if header.get('simulator_software_version',0) > 0:
@@ -190,6 +190,11 @@ class SimCompamp(object):
         #to get the public header
         private_header = header
         header, self.data = self.data.split(b'\n',1)
+
+        if six.PY3:
+            header = header.decode('utf-8')
+        header = json.loads(header)
+
 
     self._header = header
     self.shape = shape
