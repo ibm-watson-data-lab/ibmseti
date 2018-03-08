@@ -5,8 +5,6 @@ SETI Institute data generated from the Allen Telescope Array. It provides the es
 code needed to get started reading the data, calculating spectrograms and autocorrelation
 spectra, and extracting some of the standard features from those results.
 
-[Go here if you're looking to get started analyzing SETI data.](https://github.com/ibm-cds-labs/seti_at_ibm)
-
 
 ## Example User Code
 
@@ -51,7 +49,7 @@ fig, ax = plt.subplots()
 ax.pcolormesh(freq_bins, time_bins, spectrogram)
 ```
 
-#### Spectrom from Simulated Data
+#### Spectrum from Simulated Data
 
 Due to the difference in the structure of the bytes packed in the simulated data compared to 
 the real data (the simulated data are much simpler), a different code was written to create a spectrogram.
