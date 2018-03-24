@@ -18,6 +18,7 @@ spectra, and extracting some of the standard features from those results.
 ### Read the Data
 
 The raw data (`compamp` or `archive-compamp` files) are read with a `ibmseti.compamp.Compamp` object.
+Be sure to open files in `rb` mode. 
 
 ```python
 import ibmseti
@@ -58,7 +59,7 @@ the real data (the simulated data are much simpler), a different code was writte
 Also, there is no need for the time and frequency bin edges for the plots. The simulated signals could
 be at any central frequency, and digitized at any sampling rate. However, the shape of the spectrogram 
 produced in the code below transforms the data into the "standard" spectrogram/waterfall typically used
-to analyze the real archive-compamp files. 
+to analyze the real archive-compamp files.  Be sure to open files in `rb` mode. 
 
 ```python
 rawdatafile = open('path/to/data/<uuid>.dat','rb')
@@ -221,6 +222,14 @@ The asymmetry is defined as
 where `spect_L` and `spect_R` are the 2D spectrograms for the L and R polarizations.  The returned 
 `A` can be further analyzed. The total integration of `A` could be a useful feature as we would expect
 E.T. signals not to be completely polarized in either the L or R polarizations (A = +/- 1).  
+
+##### Summation of Polarities
+
+It may be useful to examine the full signal in both polarities by summing them together
+
+  S = spect_L + spect_R
+
+where `spect_L` and `spect_R` are the 2D spectrograms for the L and R polarizations.  
 
 ### License 
 
